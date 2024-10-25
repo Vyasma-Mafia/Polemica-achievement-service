@@ -9,11 +9,8 @@ data class PolemicaPlayer(
     val position: Int,
     val username: String,
     val role: Role,
-    @Range(min = 0, max = 2)
-    val techs: Int,
-    @Range(min = 0, max = 4)
-    val fouls: Int,
-    val player: Long
-) {
-
-}
+    val techs: List<Foul>,
+    val fouls: List<Foul>,
+    val guess: PolemicaGuess?,
+    val player: PolemicaUser?
+)

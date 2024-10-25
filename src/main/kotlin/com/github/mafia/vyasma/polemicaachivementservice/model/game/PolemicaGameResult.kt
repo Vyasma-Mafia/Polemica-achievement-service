@@ -1,29 +1,19 @@
 package com.github.mafia.vyasma.polemicaachivementservice.model.game
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.github.mafia.vyasma.polemicaachivementservice.utils.enums.IntEnum
+import com.github.mafia.vyasma.polemicaachivementservice.utils.enums.IntEnumDeserializer
+import com.github.mafia.vyasma.polemicaachivementservice.utils.enums.IntEnumSerializer
 
+@JsonSerialize(using = IntEnumSerializer::class)
+@JsonDeserialize(using = PolemicaGameResultDeserializer::class)
 enum class PolemicaGameResult(
-    val value: Int
-) {
+    override val value: Int
+) : IntEnum {
     RED_WIN(0),
     BLACK_WIN(1)
 }
 
-class PolemicaGameResultSerializer : JsonSerializer<PolemicaGameResult>() {
-    override fun serialize(role: PolemicaGameResult, gen: JsonGenerator, serializers: SerializerProvider) {
-        gen.writeNumber(role.value)
-    }
-}
-
-class PolemicaGameResultDeserializer : JsonDeserializer<PolemicaGameResult>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): PolemicaGameResult {
-        val intValue = parser.intValue
-        return PolemicaGameResult.entries.find { it.value == intValue }
-            ?: throw IllegalArgumentException("Invalid value for PolemicaGameResult: $intValue")
-    }
-}
+class PolemicaGameResultDeserializer :
+    IntEnumDeserializer<PolemicaGameResult>(PolemicaGameResult.entries.toTypedArray())

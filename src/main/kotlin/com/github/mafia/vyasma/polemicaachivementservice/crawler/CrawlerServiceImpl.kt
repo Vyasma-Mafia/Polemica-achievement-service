@@ -9,7 +9,14 @@ class CrawlerServiceImpl(val polemicaClient: PolemicaClient) : CrawlerService {
 
 
     override fun crawl() {
-        val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(289, 261573))
-        logger.info(res.toString())
+        val games = polemicaClient.getGamesFromClub(289, 0, 50)
+        games.filter { it.result != null }.forEach {
+            try {
+                val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(289, it.id, 4))
+                logger.info(res.toString())
+            } catch (e: Exception) {
+                logger.warn("Error on get game: ${it.id}", e)
+            }
+        }
     }
 }

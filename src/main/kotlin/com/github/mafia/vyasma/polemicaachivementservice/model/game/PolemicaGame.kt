@@ -13,6 +13,7 @@ data class PolemicaGame(
     val tags: List<String>,
     val players: List<PolemicaPlayer>,
     val shots: List<PolemicaShot>,
+    val stage: Stage,
     val votes: List<PolemicaVote>
 ) {
 }
