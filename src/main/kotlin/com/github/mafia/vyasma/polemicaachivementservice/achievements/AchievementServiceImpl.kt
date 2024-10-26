@@ -27,10 +27,13 @@ class AchievementServiceImpl(
         }
     }
 
-    override fun getAchievements(gainsUsernames: List<String>): AchievementService.AchievementsWithGains {
+    override fun getAchievements(
+        gainsUsernames: List<String>,
+        ids: List<Long>
+    ): AchievementService.AchievementsWithGains {
         return AchievementService.AchievementsWithGains(
             achievements,
-            build(achievementGainsRepository.findAllByUserUsernameIn(gainsUsernames))
+            build(achievementGainsRepository.findAllByUserUsernameInOrUserUserIdIn(gainsUsernames, ids))
         )
     }
 

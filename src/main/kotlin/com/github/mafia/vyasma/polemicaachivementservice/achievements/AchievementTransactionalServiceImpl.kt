@@ -45,6 +45,7 @@ class AchievementTransactionalServiceImpl(
             }
         }
         game.processedVersion = version + 1
+        gameRepository.save(game)
     }
 
     @Transactional

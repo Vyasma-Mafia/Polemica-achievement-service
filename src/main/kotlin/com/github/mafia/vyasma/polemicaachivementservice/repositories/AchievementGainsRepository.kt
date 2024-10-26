@@ -8,5 +8,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface AchievementGainsRepository : JpaRepository<AchievementGain, Long> {
     fun findOneByAchievementAndUserIs(achievement: String, userId: User): AchievementGain?
-    fun findAllByUserUsernameIn(usernames: List<String>): List<AchievementGain>
+    fun findAllByUserUsernameInOrUserUserIdIn(
+        userUsername: Collection<String>,
+        user: Collection<Long>
+    ): List<AchievementGain>
 }

@@ -5,7 +5,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 
 interface AchievementService {
     fun checkAchievements()
-    fun getAchievements(gainsUsernames: List<String>): AchievementsWithGains
+    fun getAchievements(gainsUsernames: List<String>, ids: List<Long>): AchievementsWithGains
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     data class AchievementsWithGains(

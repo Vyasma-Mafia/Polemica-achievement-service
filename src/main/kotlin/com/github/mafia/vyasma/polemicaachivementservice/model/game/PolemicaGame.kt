@@ -15,5 +15,7 @@ data class PolemicaGame(
     val shots: List<PolemicaShot>,
     val stage: Stage,
     val votes: List<PolemicaVote>,
+    val comKiller: Int?,
+    val bonuses: List<PolemicaBonus>,
     val result: PolemicaGameResult?
 )

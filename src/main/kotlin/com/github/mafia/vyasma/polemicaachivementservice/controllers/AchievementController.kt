@@ -19,16 +19,22 @@ class AchievementController(val achievementService: AchievementService) {
     @Operation
     @GetMapping
     fun getAchievements(
-
         @RequestParam(defaultValue = "")
         @Parameter(
             name = "usernames",
             description = "Пользователи, для которых будут выданы достижения",
             required = false,
             array = ArraySchema(items = Schema(type = "String"))
-        ) usernames: List<String>
+        ) usernames: List<String>,
+        @RequestParam(defaultValue = "")
+        @Parameter(
+            name = "ids",
+            description = "Id пользователей, для которых будут выданы достижения",
+            required = false,
+            array = ArraySchema(items = Schema(type = "Long"))
+        ) ids: List<Long>,
     ): ResponseEntity<AchievementService.AchievementsWithGains> {
-        return ResponseEntity.ok().body(achievementService.getAchievements(usernames))
+        return ResponseEntity.ok().body(achievementService.getAchievements(usernames, ids))
     }
 
     @Operation(hidden = true)
