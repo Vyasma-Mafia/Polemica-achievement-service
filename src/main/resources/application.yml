@@ -7,8 +7,8 @@ app:
     interval: 5m
   crawlClubs:
     - 289
-#    - 72
-#    - 182
+    - 72
+    - 182
 
 spring:
   application:
