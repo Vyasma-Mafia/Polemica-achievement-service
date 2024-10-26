@@ -7,18 +7,18 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty(value = ["app.scheduler.enable"], havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(value = ["app.crawlScheduler.enable"], havingValue = "true", matchIfMissing = true)
 @EnableScheduling
-class PolemicaCrawlScheduler(val crawlerService: CrawlerService) {
-    private val logger = LoggerFactory.getLogger(PolemicaCrawlScheduler::class.java.name)
+class PolemicaCrawlSchedulerComponent(val crawlerService: CrawlerService) {
+    private val logger = LoggerFactory.getLogger(PolemicaCrawlSchedulerComponent::class.java.name)
 
-    @Scheduled(fixedDelayString = "#{@scheduler.interval.toMillis()}")
+    @Scheduled(fixedDelayString = "#{@crawlScheduler.interval.toMillis()}")
     private fun update() {
         try {
             logger.info("Crawl start")
             crawlerService.crawl()
         } catch (e: Exception) {
-            logger.error("Error on updating links: " + e.message, e)
+            logger.error("Error on crawling: " + e.message, e)
         }
     }
 }

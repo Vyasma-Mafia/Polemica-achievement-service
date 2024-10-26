@@ -24,7 +24,7 @@ class PolemicaClientImpl(private val polemicaWebClient: WebClient) : PolemicaCli
 
     override fun getGamesFromClub(clubId: Long, offset: Long, limit: Long): List<PolemicaClient.PolemicaGameReference> {
         return polemicaWebClient.get()
-            .uri("/v1/clubs/${clubId}/games")
+            .uri("/v1/clubs/${clubId}/games?offset=${offset}&limit=${limit}")
             .retrieve()
             .bodyToFlux(PolemicaClient.PolemicaGameReference::class.java)
             .collectList()

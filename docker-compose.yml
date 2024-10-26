@@ -1,35 +1,61 @@
 services:
-  postgresql:
+  achievement-postgres:
     image: postgres:16
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: achievement
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
     volumes:
-      - postgresql:/var/lib/postgresql/data
+      - achievement-postgres-data:/var/lib/postgresql/data
     networks:
       - backend
+    healthcheck: # Add health check for better service readiness tracking
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
   migration:
     image: liquibase/liquibase:4.25
     container_name: liquibase
     depends_on:
-      - postgresql
+      achievement-postgres:
+        condition: service_healthy  # Run migration only when the database is healthy
     command:
       - --changelog-file=master.xml
       - --driver=org.postgresql.Driver
-      - --url=jdbc:postgresql://postgresql:5432/achievement
-      - --username=postgres
-      - --password=postgres
+      - --url=jdbc:postgresql://achievement-postgres:5432/achievement
+      - --username=${DB_USER}
+      - --password=${DB_PASSWORD}
       - update
     volumes:
       - ./migrations:/liquibase/changelog/
     networks:
       - backend
 
+  achievement-service:
+    build: .
+    container_name: achievement-service
+    ports:
+      - "8085:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://achievement-postgres:5432/achievement
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      achievement-postgres:
+        condition: service_healthy  # Start service only after DB is healthy
+      migration:
+        condition: service_completed_successfully  # Ensure migrations complete before service starts
+    networks:
+      - backend
+
 volumes:
-  postgresql: { }
+  achievement-postgres-data:  # Renamed to clarify its purpose (data persistence)
 
 networks:
-  backend: { }
+  backend:

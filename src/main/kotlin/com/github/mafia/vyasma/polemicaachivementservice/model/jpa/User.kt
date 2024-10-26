@@ -13,17 +13,17 @@ import java.time.LocalDateTime
 @Table(name = "Users", uniqueConstraints = [UniqueConstraint(columnNames = ["username"])])
 data class User(
     @Id
-    @Column(name = "userId", nullable = false)
+    @Column(name = "user_id", nullable = false)
     var userId: Long,
 
     @Column(name = "username", nullable = false, length = 50, unique = true)
     var username: String,
 
     @CreationTimestamp
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: LocalDateTime? = null,
 
     @UpdateTimestamp
-    @Column(name = "updatedAt", nullable = false)
+    @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
 )

@@ -6,6 +6,4 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 data class PolemicaUser(
     val id: Long,
     val username: String
-) {
-
-}
+)

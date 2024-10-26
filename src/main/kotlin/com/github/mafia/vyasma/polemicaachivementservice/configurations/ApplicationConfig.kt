@@ -6,19 +6,20 @@ import org.springframework.validation.annotation.Validated
 import java.time.Duration
 
 @Validated
-@ConfigurationProperties(prefix = "app", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "app", ignoreUnknownFields = true)
 data class ApplicationConfig(
-    val scheduler: Scheduler,
-    val linkCheckProperties: LinkCheckProperties,
+    val crawlScheduler: Scheduler,
+    val achievementCheckScheduler: Scheduler,
+    val crawlClubs: List<Long>
 ) {
     @Bean
-    fun scheduler() = scheduler
+    fun crawlScheduler() = crawlScheduler
     @Bean
-    fun linkCheckProperties() = linkCheckProperties
+    fun achievementCheckScheduler() = achievementCheckScheduler
 
-    data class Scheduler(val enable: Boolean, val interval: Duration, val forceCheckDelay: Duration) {
-    }
+    @Bean
+    fun crawlClubs() = crawlClubs
 
-    data class LinkCheckProperties(val linkCheckInterval: Duration) {
+    data class Scheduler(val enable: Boolean, val interval: Duration) {
     }
 }

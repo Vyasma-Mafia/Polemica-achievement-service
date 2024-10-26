@@ -16,9 +16,9 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     name = "achievement_gains",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["achievement", "userId"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["achievement", "user_id"])]
 )
-data class AchievementsGain(
+data class AchievementGain(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -28,17 +28,17 @@ data class AchievementsGain(
     var achievement: String,
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "userId", referencedColumnName = "userId", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     var user: User,
 
-    @Column(name = "achievementLevel")
-    var achievementLevel: Long? = null,
+    @Column(name = "achievement_counter")
+    var achievementCounter: Long? = null,
 
     @CreationTimestamp
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: LocalDateTime? = null,
 
     @UpdateTimestamp
-    @Column(name = "updatedAt", nullable = false)
+    @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
 )

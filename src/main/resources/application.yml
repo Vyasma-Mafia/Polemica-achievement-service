@@ -1,10 +1,14 @@
 app:
-  scheduler:
+  crawl-scheduler:
     enable: true
-    interval: 10s
-    force-check-delay: 10s
-  link-check-properties:
-    link-check-interval: 10m
+    interval: 10m
+  achievement-check-scheduler:
+    enable: true
+    interval: 5m
+  crawlClubs:
+    - 289
+#    - 72
+#    - 182
 
 spring:
   application:
@@ -13,9 +17,9 @@ spring:
     change-log: liquibase/master.xml
     enabled: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/achievement
-    username: postgres
-    password: postgres
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/achievement}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
 
 
   jpa:

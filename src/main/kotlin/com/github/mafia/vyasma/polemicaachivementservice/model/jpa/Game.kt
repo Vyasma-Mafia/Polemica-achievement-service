@@ -1,7 +1,9 @@
 package com.github.mafia.vyasma.polemicaachivementservice.model.jpa
 
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
@@ -15,20 +17,23 @@ import java.time.LocalDateTime
 @Table(name = "Games")
 data class Game(
     @Id
-    @Column(name = "gameId", nullable = false)
+    @Column(name = "game_id", nullable = false)
     var gameId: Long,
 
-    @Column(name = "processedVersion", nullable = false)
+    @Column(name = "processed_version", nullable = false)
     var processedVersion: Long,
 
-    // @JdbcTypeCode(SqlTypes.JSON)
-    // val data: PolemicaGame,
+    @JdbcTypeCode(SqlTypes.JSON)
+    val data: PolemicaGame,
+
+    @Embedded
+    val gamePlace: PolemicaGamePlace,
 
     @CreationTimestamp
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: LocalDateTime? = null,
 
     @UpdateTimestamp
-    @Column(name = "updatedAt", nullable = false)
+    @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
 )

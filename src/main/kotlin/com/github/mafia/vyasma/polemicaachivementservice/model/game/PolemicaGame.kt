@@ -7,13 +7,13 @@ data class PolemicaGame(
     val id: Long,
     val master: Long,
     val referee: PolemicaUser,
-    val scoringVersion: String,
+    val scoringVersion: String?,
     val scoringType: Int,
     val version: Int,
     val tags: List<String>,
     val players: List<PolemicaPlayer>,
     val shots: List<PolemicaShot>,
     val stage: Stage,
-    val votes: List<PolemicaVote>
-) {
-}
+    val votes: List<PolemicaVote>,
+    val result: PolemicaGameResult?
+)
