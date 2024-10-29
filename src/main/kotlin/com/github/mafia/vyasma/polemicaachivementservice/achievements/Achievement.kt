@@ -8,4 +8,6 @@ interface Achievement {
     val description: String
     val levels: List<Int>
     fun check(game: PolemicaGame, position: Int): Int
+
+    fun boolToInt(value: Boolean): Int = if (value) 1 else 0
 }

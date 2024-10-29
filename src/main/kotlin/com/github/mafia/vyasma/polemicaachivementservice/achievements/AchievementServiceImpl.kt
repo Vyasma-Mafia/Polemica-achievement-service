@@ -2,6 +2,7 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements
 
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGain
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGainsRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.springframework.stereotype.Service
@@ -15,7 +16,12 @@ class AchievementServiceImpl(
     val achievementTransactionalService: AchievementTransactionalService
 ) : AchievementService {
     private val achievements = listOf(
-        WinAsDonAchievement
+        WinAsDonAchievement,
+        SniperAchievement,
+        StrongSheriffAchievement,
+        FullMafsAchievement,
+        SheriffViceAchievement,
+        StrongCityAchievement
     )
 
     private val achievementsMap = achievements.associateBy { it.id }
@@ -72,4 +78,32 @@ class AchievementServiceImpl(
             achievementTransactionalService.saveUsersFromGame(game)
         }
     }
+
+    override fun getAchievementsGames(achievementId: String): AchievementService.AchievementGames {
+        val achievement = achievementsMap[achievementId] ?: throw IllegalArgumentException("Achievement not found")
+
+        return AchievementService.AchievementGames(gameRepository.findAll().flatMap { game ->
+            gameWithPositionsForAchievement(game, achievement)
+        })
+    }
+
+    private fun gameWithPositionsForAchievement(
+        game: Game,
+        achievement: Achievement
+    ): List<AchievementService.AchievementGames.GamePostpositionForAchievement> =
+        game.data.players.flatMap { player ->
+            val checkResult = achievement.check(game.data, player.position)
+            if (checkResult != 0) {
+                return listOf(
+                    AchievementService.AchievementGames.GamePostpositionForAchievement(
+                        game.gameId,
+                        game.gamePlace,
+                        player.position,
+                        checkResult
+                    )
+                )
+            } else {
+                emptyList()
+            }
+        }
 }

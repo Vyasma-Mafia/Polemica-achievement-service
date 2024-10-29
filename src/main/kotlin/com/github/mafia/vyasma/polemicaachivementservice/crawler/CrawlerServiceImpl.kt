@@ -34,9 +34,9 @@ class CrawlerServiceImpl(
                 .forEach {
                     try {
                         val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(clubId, it.id, 4))
-                        sleep(300)
                         val game = Game(res.id, 0, res, PolemicaGamePlace(clubId = clubId))
                         gameRepository.save(game)
+                        sleep(300)
                     } catch (e: Exception) {
                         logger.warn("Error on get game: ${it.id} from club $clubId", e)
                     }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -42,5 +43,13 @@ class AchievementController(val achievementService: AchievementService) {
     fun checkAchievements(): ResponseEntity<Void> {
         achievementService.checkAchievements()
         return ResponseEntity.ok().build()
+    }
+
+    @Operation(hidden = true)
+    @GetMapping("/{achievementId}/games/_explain")
+    fun explainGamesForAchievement(
+        @PathVariable(name = "achievementId") achievementId: String
+    ): ResponseEntity<AchievementService.AchievementGames> {
+        return ResponseEntity.ok(achievementService.getAchievementsGames(achievementId))
     }
 }
