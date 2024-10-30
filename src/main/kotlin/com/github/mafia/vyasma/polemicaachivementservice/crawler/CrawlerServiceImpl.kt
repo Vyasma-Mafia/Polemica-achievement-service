@@ -1,5 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.crawler
 
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -13,13 +14,15 @@ private const val GET_LIMIT = 100L
 class CrawlerServiceImpl(
     val polemicaClient: PolemicaClient,
     val gameRepository: GameRepository,
-    val crawlClubs: List<Long>
+    val crawlClubs: List<Long>,
+    val achievementService: AchievementService
 ) : CrawlerService {
     private val logger = LoggerFactory.getLogger(CrawlerServiceImpl::class.java.name)
 
 
     override fun crawl() {
         crawlClubs.forEach { crawlClub(it) }
+        achievementService.checkAchievements()
     }
 
     fun crawlClub(clubId: Long) {

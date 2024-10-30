@@ -5,8 +5,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 interface AchievementTransactionalService {
     fun processAchievementForGame(
         achievement: Achievement,
-        game: Game,
-        version: Long
+        game: Game
     )
 
     fun saveUsersFromGame(game: Game)

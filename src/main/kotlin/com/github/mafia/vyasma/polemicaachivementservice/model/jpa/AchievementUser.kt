@@ -15,10 +15,10 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
-    name = "achievement_gains",
+    name = "achievement_users",
     uniqueConstraints = [UniqueConstraint(columnNames = ["achievement", "user_id"])]
 )
-data class AchievementGain(
+data class AchievementUser(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

@@ -1,9 +1,14 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements
 
-import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGain
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUser
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUserKey
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.User
-import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGainsRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameUserRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementUsersRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
 import jakarta.transaction.Transactional
@@ -16,27 +21,39 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 class AchievementTransactionalServiceImpl(
     val gameRepository: GameRepository,
     val userRepository: UserRepository,
-    val achievementGainsRepository: AchievementGainsRepository,
+    val achievementUsersRepository: AchievementUsersRepository,
+    val achievementGameRepository: AchievementGameRepository,
+    val achievementGameUserRepository: AchievementGameUserRepository
 ) : AchievementTransactionalService {
 
     @Transactional
     override fun processAchievementForGame(
         achievement: Achievement,
-        game: Game,
-        version: Long
+        game: Game
     ) {
+        val achievementGame =
+            achievementGameRepository.save(AchievementGame(gameId = game.gameId, achievement = achievement.id))
         for (player in game.data.players) {
             val checkResult = achievement.check(game.data, player.position)
-            if (checkResult == 0) continue
             if (player.player == null) continue
+            if (checkResult == 0) continue
             val user = userRepository.findByIdOrNull(player.player) ?: continue
-            val achievementGain = achievementGainsRepository.findOneByAchievementAndUserIs(achievement.id, user)
+            achievementGameUserRepository.save(
+                AchievementGameUser(
+                    AchievementGameUserKey(
+                        achievementGameId = achievementGame.id!!,
+                        userId = user.userId
+                    ),
+                    checkResult.toLong()
+                )
+            )
+            val achievementGain = achievementUsersRepository.findOneByAchievementAndUserIs(achievement.id, user)
             if (achievementGain != null) {
                 achievementGain.achievementCounter = achievementGain.achievementCounter?.plus(checkResult)
-                achievementGainsRepository.save(achievementGain)
+                achievementUsersRepository.save(achievementGain)
             } else {
-                achievementGainsRepository.save(
-                    AchievementGain(
+                achievementUsersRepository.save(
+                    AchievementUser(
                         achievement = achievement.id,
                         user = user,
                         achievementCounter = checkResult.toLong()
@@ -44,8 +61,6 @@ class AchievementTransactionalServiceImpl(
                 )
             }
         }
-        game.processedVersion = version + 1
-        gameRepository.save(game)
     }
 
     @Transactional

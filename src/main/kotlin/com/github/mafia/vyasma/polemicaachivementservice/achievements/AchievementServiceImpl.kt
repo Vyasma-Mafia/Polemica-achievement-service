@@ -1,10 +1,11 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements
 
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
-import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGain
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
-import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGainsRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementUsersRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.EnableTransactionManagement
 
@@ -12,25 +13,31 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableTransactionManagement
 class AchievementServiceImpl(
     val gameRepository: GameRepository,
-    val achievementGainsRepository: AchievementGainsRepository,
+    val achievementUsersRepository: AchievementUsersRepository,
     val achievementTransactionalService: AchievementTransactionalService
 ) : AchievementService {
+    private val logger = LoggerFactory.getLogger(AchievementServiceImpl::class.java.name)
     private val achievements = listOf(
+        SamuraiPathGamerAchievement,
         WinAsDonAchievement,
         SniperAchievement,
         StrongSheriffAchievement,
         FullMafsAchievement,
         SheriffViceAchievement,
-        StrongCityAchievement
+        StrongCityAchievement,
+        VoteForBlackAchievement
     )
 
     private val achievementsMap = achievements.associateBy { it.id }
 
     override fun checkAchievements() {
+        logger.info("Start check achievements")
         saveUsers()
-        achievements.forEachIndexed { version, achievement ->
-            processAchievement(achievement, version.toLong() + 1)
+
+        achievements.forEach { achievement ->
+            processAchievement(achievement)
         }
+        logger.info("End check achievements")
     }
 
     override fun getAchievements(
@@ -39,19 +46,19 @@ class AchievementServiceImpl(
     ): AchievementService.AchievementsWithGains {
         return AchievementService.AchievementsWithGains(
             achievements,
-            build(achievementGainsRepository.findAllByUserUsernameInOrUserUserIdIn(gainsUsernames, ids))
+            build(achievementUsersRepository.findAllByUserUsernameInOrUserUserIdIn(gainsUsernames, ids))
         )
     }
 
-    private fun build(achievementGains: List<AchievementGain>): List<AchievementService.AchievementGainAnswer> {
-        return achievementGains.map {
+    private fun build(achievementUsers: List<AchievementUser>): List<AchievementService.AchievementGainAnswer> {
+        return achievementUsers.map {
             AchievementService.AchievementGainAnswer(
                 user = PolemicaUser(it.user.userId, it.user.username),
                 achievementId = it.achievement,
                 achievementCounter = it.achievementCounter,
                 achievementLevel = getAchievementLevel(it.achievement, it.achievementCounter)
             )
-        }
+        }.sortedBy { achievementsMap[it.achievementId]?.order }
     }
 
     private fun getAchievementLevel(achievement: String, achievementCounter: Long?): Int {
@@ -67,9 +74,9 @@ class AchievementServiceImpl(
         return levels.size
     }
 
-    fun processAchievement(achievement: Achievement, version: Long) {
-        gameRepository.findAllWhereByProcessedVersionIs(version).forEach { game ->
-            achievementTransactionalService.processAchievementForGame(achievement, game, version)
+    fun processAchievement(achievement: Achievement) {
+        gameRepository.findAllWhereNotAchievement(achievement.id).forEach { game ->
+            achievementTransactionalService.processAchievementForGame(achievement, game)
         }
     }
 

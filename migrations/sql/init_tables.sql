@@ -23,13 +23,13 @@ create index games_processed_version
 
 CREATE TABLE achievement_gains
 (
-    id                bigint generated always as identity,
-    achievement       varchar(20) not null,
-    user_id           bigint      not null REFERENCES Users (user_id),
+    id          bigint generated always as identity,
+    achievement varchar(20) not null,
+    user_id     bigint      not null REFERENCES Users (user_id),
     achievement_counter bigint,
 
-    created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (achievement, user_id)
 );
 

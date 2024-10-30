@@ -55,7 +55,7 @@ services:
       - backend
 
 volumes:
-  achievement-postgres-data:  # Renamed to clarify its purpose (data persistence)
+  achievement-postgres-data:
 
 networks:
   backend:

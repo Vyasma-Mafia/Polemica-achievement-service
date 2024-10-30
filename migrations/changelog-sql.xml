@@ -7,4 +7,8 @@
     <changeSet id="init_tables" author="chulkov-alex">
         <sqlFile path="sql/init_tables.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="achievement_for_every_game" author="chulkov-alex">
+        <sqlFile path="sql/achievement_for_every_game.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>
