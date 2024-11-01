@@ -1,5 +1,19 @@
-package com.github.mafia.vyasma.polemicaachivementservice.achievements
+package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FullMafsAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.PartialMafsGuessAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SamuraiPathAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SheriffViceAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SniperAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.StrongCityAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.StrongSheriffAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.VoteForBlackAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsBlackAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsDonAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsLastBlackAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsRedInLastAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinThreeToThreeLastAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
@@ -8,24 +22,31 @@ import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameReposi
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import java.time.LocalDateTime
 
 @Service
 @EnableTransactionManagement
 class AchievementServiceImpl(
     val gameRepository: GameRepository,
     val achievementUsersRepository: AchievementUsersRepository,
-    val achievementTransactionalService: AchievementTransactionalService
+    val achievementTransactionalService: AchievementTransactionalService,
+    val achievementCheckGameStartedAfter: LocalDateTime
 ) : AchievementService {
     private val logger = LoggerFactory.getLogger(AchievementServiceImpl::class.java.name)
     private val achievements = listOf(
-        SamuraiPathGamerAchievement,
+        SamuraiPathAchievement,
         WinAsDonAchievement,
         SniperAchievement,
         StrongSheriffAchievement,
         FullMafsAchievement,
         SheriffViceAchievement,
         StrongCityAchievement,
-        VoteForBlackAchievement
+        VoteForBlackAchievement,
+        WinAsBlackAchievement,
+        WinAsLastBlackAchievement,
+        WinAsRedInLastAchievement,
+        WinThreeToThreeLastAchievement,
+        PartialMafsGuessAchievement
     )
 
     private val achievementsMap = achievements.associateBy { it.id }
@@ -75,7 +96,8 @@ class AchievementServiceImpl(
     }
 
     fun processAchievement(achievement: Achievement) {
-        gameRepository.findAllWhereNotAchievement(achievement.id).forEach { game ->
+        gameRepository.findAllWhereNotAchievementStartedAfterDate(achievement.id, achievementCheckGameStartedAfter)
+            .forEach { game ->
             achievementTransactionalService.processAchievementForGame(achievement, game)
         }
     }
@@ -113,4 +135,19 @@ class AchievementServiceImpl(
                 emptyList()
             }
         }
+
+    override fun getTopAchievementUsers(
+        userIds: List<Long>,
+        rankLimit: Int
+    ): AchievementService.AchievementsWithGains {
+        return AchievementService.AchievementsWithGains(
+            achievements,
+            build(
+                achievementUsersRepository.findTopByAchievementCounterForEveryAchievementWhereUserIdIn(
+                    userIds,
+                    rankLimit
+                )
+            )
+        )
+    }
 }

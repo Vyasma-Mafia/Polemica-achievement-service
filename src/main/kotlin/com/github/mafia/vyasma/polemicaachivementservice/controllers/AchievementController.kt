@@ -1,6 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
-import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementService
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -36,6 +36,14 @@ class AchievementController(val achievementService: AchievementService) {
         ) ids: List<Long>,
     ): ResponseEntity<AchievementService.AchievementsWithGains> {
         return ResponseEntity.ok().body(achievementService.getAchievements(usernames, ids))
+    }
+
+    @GetMapping("/_top")
+    fun getTop5AchievementsByUserIds(
+        @RequestParam userIds: List<Long>,
+        @RequestParam(defaultValue = "5") limit: Int
+    ): ResponseEntity<AchievementService.AchievementsWithGains> {
+        return ResponseEntity.ok(achievementService.getTopAchievementUsers(userIds, limit))
     }
 
     @Operation(hidden = true)

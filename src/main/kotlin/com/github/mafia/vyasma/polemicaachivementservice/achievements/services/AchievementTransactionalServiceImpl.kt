@@ -1,5 +1,6 @@
-package com.github.mafia.vyasma.polemicaachivementservice.achievements
+package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUserKey
@@ -70,7 +71,6 @@ class AchievementTransactionalServiceImpl(
                 userRepository.save(User(player.player, player.username))
             }
         }
-        game.processedVersion = 1
         gameRepository.save(game)
     }
 }

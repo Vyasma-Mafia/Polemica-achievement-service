@@ -1,6 +1,7 @@
-package com.github.mafia.vyasma.polemicaachivementservice.achievements
+package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 
@@ -33,6 +34,8 @@ interface AchievementService {
         val achievementLevel: Int,
         val achievementCounter: Long?
     )
+
+    fun getTopAchievementUsers(userIds: List<Long>, rankLimit: Int): AchievementsWithGains
 }
 
 

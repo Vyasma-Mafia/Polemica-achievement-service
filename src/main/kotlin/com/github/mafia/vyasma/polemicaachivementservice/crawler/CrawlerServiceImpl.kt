@@ -1,6 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.crawler
 
-import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementService
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -37,7 +37,12 @@ class CrawlerServiceImpl(
                 .forEach {
                     try {
                         val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(clubId, it.id, 4))
-                        val game = Game(res.id, 0, res, PolemicaGamePlace(clubId = clubId))
+                        val game = Game(
+                            gameId = res.id,
+                            data = res,
+                            gamePlace = PolemicaGamePlace(clubId = clubId),
+                            started = res.started
+                        )
                         gameRepository.save(game)
                         sleep(300)
                     } catch (e: Exception) {

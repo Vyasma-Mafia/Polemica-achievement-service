@@ -9,6 +9,7 @@ app:
     - 289
     - 72
     - 182
+  achievement-check-game-started-after: 2024-09-01T00:00:00
 
 spring:
   application:

@@ -21,13 +21,16 @@ data class Game(
     var gameId: Long,
 
     @Column(name = "processed_version", nullable = false)
-    var processedVersion: Long,
+    var processedVersion: Long = 0,
 
     @JdbcTypeCode(SqlTypes.JSON)
     val data: PolemicaGame,
 
     @Embedded
     val gamePlace: PolemicaGamePlace,
+
+    @Column(name = "started", nullable = false, updatable = false)
+    val started: LocalDateTime? = null,
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
