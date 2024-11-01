@@ -71,6 +71,7 @@ class AchievementTransactionalServiceImpl(
                 userRepository.save(User(player.player, player.username))
             }
         }
+        game.processedVersion += 1
         gameRepository.save(game)
     }
 }
