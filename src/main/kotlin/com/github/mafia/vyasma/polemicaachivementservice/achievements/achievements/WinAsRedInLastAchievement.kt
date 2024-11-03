@@ -11,12 +11,12 @@ object WinAsRedInLastAchievement : Achievement {
     override val id = "winAsRedInLast"
     override val name = "Везунчик"
     override val description = "Выиграйте за красного в угадайке"
-    override val levels = listOf(1, 3, 7, 20, 50)
+    override val levels = listOf(1, 2, 5, 15, 30)
     override fun check(game: PolemicaGame, position: Int): Int {
         if (!game.getPositionRole(position).isRed() || !game.isRedWin()) {
             return boolToInt(false)
         }
         val onTable = game.playersOnTable()
-        return boolToInt(onTable.size == 2)
+        return boolToInt(onTable.size == 2 && onTable.contains(position))
     }
 }
