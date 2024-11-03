@@ -11,7 +11,7 @@ object WinAsRedInLastAchievement : Achievement {
     override val id = "winAsRedInLast"
     override val name = "Везунчик"
     override val description = "Выиграйте за красного в угадайке"
-    override val levels = listOf(1, 4, 10, 20, 50)
+    override val levels = listOf(1, 3, 7, 20, 50)
     override fun check(game: PolemicaGame, position: Int): Int {
         if (!game.getPositionRole(position).isRed() || !game.isRedWin()) {
             return boolToInt(false)

@@ -11,7 +11,7 @@ object WinThreeToThreeLastAchievement : Achievement {
     override val id = "winThreeToThree"
     override val name = "Баланс не нужен"
     override val description = "Выиграйте за черного 3 в 3"
-    override val levels = listOf(1, 4, 10, 20, 50)
+    override val levels = listOf(1, 2, 5, 20, 50)
     override fun check(game: PolemicaGame, position: Int): Int {
         if (!game.getPositionRole(position).isBlack() || !game.isBlackWin()) {
             return boolToInt(false)

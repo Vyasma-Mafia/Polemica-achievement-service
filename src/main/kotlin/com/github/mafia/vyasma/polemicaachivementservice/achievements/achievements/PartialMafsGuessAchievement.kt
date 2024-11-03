@@ -9,7 +9,7 @@ object PartialMafsGuessAchievement : Achievement {
     override val id = "partialMafsGuess"
     override val name = "Два из трех"
     override val description = "Оставьте в лучший ход 2 мафии"
-    override val levels = listOf(1, 3, 7, 15, 30)
+    override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Int): Int {
         val lastWordMafs =
             game.players.find { it.position == position }?.guess?.mafs?.map { game.getPositionRole(it) }

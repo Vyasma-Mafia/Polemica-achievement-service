@@ -10,7 +10,7 @@ object SheriffViceAchievement : Achievement {
     override val id = "sheriffVice"
     override val name = "Это мой шериф!"
     override val description = "Оставьте руль шерифу, будучи красным"
-    override val levels = listOf(1, 3, 7, 15, 30)
+    override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Int): Int {
         val lastWordVice =
             game.players.find { it.position == position }?.guess?.vice

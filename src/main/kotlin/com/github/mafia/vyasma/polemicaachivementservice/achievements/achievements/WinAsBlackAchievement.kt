@@ -10,7 +10,7 @@ object WinAsBlackAchievement : Achievement {
     override val id = "winAsBlack"
     override val name = "Я не боюсь черную карту"
     override val description = "Выиграйте за дона или мафию"
-    override val levels = listOf(1, 7, 20, 50, 150)
+    override val levels = listOf(1, 3, 10, 30, 100)
     override fun check(game: PolemicaGame, position: Int): Int = boolToInt(
         listOf(Role.DON, Role.MAFIA).contains(game.getPositionRole(position)) &&
             game.result == PolemicaGameResult.BLACK_WIN

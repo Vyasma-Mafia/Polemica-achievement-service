@@ -10,7 +10,7 @@ object StrongSheriffAchievement : Achievement {
     override val id = "strongSheriff"
     override val name = "Сильный шериф"
     override val description = "Выиграйте за шерифа"
-    override val levels = listOf(1, 5, 10, 25, 50)
+    override val levels = listOf(1, 3, 7, 15, 50)
     override fun check(game: PolemicaGame, position: Int): Int = boolToInt(
         game.getPositionRole(position) == Role.SHERIFF &&
             game.result == PolemicaGameResult.RED_WIN

@@ -10,7 +10,7 @@ object WinAsDonAchievement : Achievement {
     override val id = "winAsDon"
     override val name = "Дон победитель"
     override val description = "Выиграйте за дона"
-    override val levels = listOf(1, 5, 10, 25, 50)
+    override val levels = listOf(1, 2, 5, 15, 30)
     override fun check(game: PolemicaGame, position: Int): Int = boolToInt(
         game.getPositionRole(position) == Role.DON &&
             game.result == PolemicaGameResult.BLACK_WIN

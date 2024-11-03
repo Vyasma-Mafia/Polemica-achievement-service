@@ -11,7 +11,7 @@ object WinAsLastBlackAchievement : Achievement {
     override val id = "winAsLastBlack"
     override val name = "Последний герой"
     override val description = "Выиграйте за дона или мафию, оставшись последним черным за столом"
-    override val levels = listOf(1, 3, 5, 10, 25)
+    override val levels = listOf(1, 2, 5, 15, 30)
     override fun check(game: PolemicaGame, position: Int): Int {
         if (!game.getPositionRole(position).isBlack() || !game.isBlackWin()) {
             return boolToInt(false)

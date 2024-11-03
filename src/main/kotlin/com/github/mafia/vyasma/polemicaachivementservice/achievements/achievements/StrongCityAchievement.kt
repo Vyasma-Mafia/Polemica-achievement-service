@@ -11,7 +11,7 @@ object StrongCityAchievement : Achievement {
     override val id = "strongCity"
     override val name = "Сильному городу шериф не нужен"
     override val description = "Выиграйте красным, когда шериф умер в первую ночь"
-    override val levels = listOf(1, 3, 7, 15, 30)
+    override val levels = listOf(1, 2, 5, 15, 30)
     override fun check(game: PolemicaGame, position: Int): Int =
         boolToInt(game.getRealComKiller() != null && game.getPositionRole(position) == Role.PEACE && game.result == PolemicaGameResult.RED_WIN)
 }
