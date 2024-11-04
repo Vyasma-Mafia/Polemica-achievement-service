@@ -19,7 +19,8 @@ data class PolemicaPlayer(
     val guess: PolemicaGuess?,
     @JsonDeserialize(using = PolemicaPlayerFieldDeserializer::class)
     val player: Long?,
-    val disqual: Stage?
+    val disqual: Stage?,
+    val award: Double?
 )
 
 class PolemicaPlayerFieldDeserializer : JsonDeserializer<Long>() {

@@ -8,16 +8,16 @@ class PolemicaClientImpl(private val polemicaWebClient: WebClient) : PolemicaCli
     override fun getGameFromClub(clubGameId: PolemicaClient.PolemicaClubGameId): PolemicaGame {
         return polemicaWebClient.get()
             .uri(
-                "/v1/clubs/${clubGameId.clubId}/games/${clubGameId.gameId}" + getVersionQueryParam(clubGameId)
+                "/v1/clubs/${clubGameId.clubId}/games/${clubGameId.gameId}" + getVersionQueryParam(clubGameId.version)
             )
             .retrieve()
             .bodyToMono(PolemicaGame::class.java)
-            .block() ?: throw RuntimeException("Game not found")
+            .block() ?: throw RuntimeException("Get game from club error")
     }
 
-    private fun getVersionQueryParam(clubGameId: PolemicaClient.PolemicaClubGameId) =
-        if (clubGameId.version != null) {
-            "?version=${clubGameId.version}"
+    private fun getVersionQueryParam(version: Long?) =
+        if (version != null) {
+            "?version=$version"
         } else {
             ""
         }
@@ -28,6 +28,35 @@ class PolemicaClientImpl(private val polemicaWebClient: WebClient) : PolemicaCli
             .retrieve()
             .bodyToFlux(PolemicaClient.PolemicaGameReference::class.java)
             .collectList()
-            .block() ?: throw RuntimeException("Club not found")
+            .block() ?: throw RuntimeException("Get games from club error")
+    }
+
+    override fun getCompetitions(): List<PolemicaClient.PolemicaCompetition> {
+        return polemicaWebClient.get()
+            .uri("/v1/competitions")
+            .retrieve()
+            .bodyToFlux(PolemicaClient.PolemicaCompetition::class.java)
+            .collectList()
+            .block() ?: throw RuntimeException("Get competitions error")
+    }
+
+    override fun getGamesFromCompetition(id: Long): List<PolemicaClient.PolemicaGameReference> {
+        return polemicaWebClient.get()
+            .uri("/v1/competitions/${id}/games")
+            .retrieve()
+            .bodyToFlux(PolemicaClient.PolemicaGameReference::class.java)
+            .collectList()
+            .block() ?: throw RuntimeException("Get games from competition error")
+    }
+
+    override fun getGameFromCompetition(polemicaCompetitionGameId: PolemicaClient.PolemicaCompetitionGameId): PolemicaGame {
+        return polemicaWebClient.get()
+            .uri(
+                "/v1/competitions/${polemicaCompetitionGameId.competitionId}/games/${polemicaCompetitionGameId.gameId}"
+                    + getVersionQueryParam(polemicaCompetitionGameId.version)
+            )
+            .retrieve()
+            .bodyToMono(PolemicaGame::class.java)
+            .block() ?: throw RuntimeException("Get game from competition error")
     }
 }

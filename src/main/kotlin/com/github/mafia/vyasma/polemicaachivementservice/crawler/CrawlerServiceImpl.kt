@@ -6,7 +6,6 @@ import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.lang.Thread.sleep
 
 private const val GET_LIMIT = 100L
 
@@ -22,7 +21,43 @@ class CrawlerServiceImpl(
 
     override fun crawl() {
         crawlClubs.forEach { crawlClub(it) }
+        crawlCompetitions()
         achievementService.checkAchievements()
+    }
+
+    fun crawlCompetitions() {
+        logger.info("Crawling competitions started")
+        val competitions = polemicaClient.getCompetitions()
+        competitions.filter { it.city == "Санкт-Петербург" }.forEach { crawlCompetition(it) }
+        logger.info("Crawling competitions finished")
+    }
+
+    fun crawlCompetition(competition: PolemicaClient.PolemicaCompetition) {
+        val games = polemicaClient.getGamesFromCompetition(competition.id)
+        val gamesInBd = gameRepository.findAllById(games.map { it.id }).map { it.gameId }.toSet()
+        games
+            .filter { it.result != null }
+            .filter { it.id !in gamesInBd }
+            .forEach {
+                try {
+                    val res = polemicaClient.getGameFromCompetition(
+                        PolemicaClient.PolemicaCompetitionGameId(
+                            competition.id,
+                            it.id,
+                            4
+                        )
+                    )
+                    val game = Game(
+                        gameId = res.id,
+                        data = res,
+                        gamePlace = PolemicaGamePlace(competitionId = competition.id),
+                        started = res.started
+                    )
+                    gameRepository.save(game)
+                } catch (e: Exception) {
+                    logger.error("Error while crawling game ${it.id}", e)
+                }
+            }
     }
 
     fun crawlClub(clubId: Long) {
@@ -44,7 +79,6 @@ class CrawlerServiceImpl(
                             started = res.started
                         )
                         gameRepository.save(game)
-                        sleep(300)
                     } catch (e: Exception) {
                         logger.warn("Error on get game: ${it.id} from club $clubId", e)
                     }

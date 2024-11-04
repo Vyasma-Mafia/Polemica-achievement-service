@@ -57,6 +57,7 @@ fun PolemicaGame.playersOnTable(): List<Int> {
     val finalVotes = this.getFinalVotes()
     val killed = this.getKilled()
     return this.players
+        .filter { it.disqual != null }
         .map { it.position }
         .filter { pos -> pos !in finalVotes.filter { it.expelled }.flatMap { it.convicted } }
         .filter { pos -> pos !in killed.map { it.position } }

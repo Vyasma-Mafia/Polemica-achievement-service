@@ -11,4 +11,8 @@
     <changeSet id="achievement_for_every_game" author="chulkov-alex">
         <sqlFile path="sql/achievement_for_every_game.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="add_competition_games" author="chulkov-alex">
+        <sqlFile path="sql/add_competition_games.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>
