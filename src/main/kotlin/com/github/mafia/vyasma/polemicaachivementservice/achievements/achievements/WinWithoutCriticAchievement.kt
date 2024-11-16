@@ -12,7 +12,7 @@ object WinWithoutCriticAchievement : Achievement {
     override val id = "winWithoutCritic"
     override val name = "Просушили"
     override val description = "Выиграйте игру за красного, не переходя в критику"
-    override val levels = listOf(1, 2, 5, 12, 30)
+    override val levels = listOf(1, 3, 7, 20, 50)
     override fun check(game: PolemicaGame, position: Position): Int = game.check {
         assert { position.role().isRed() }
         assert { game.isRedWin() }

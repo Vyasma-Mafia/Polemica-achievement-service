@@ -12,7 +12,7 @@ object VotingOnlyForBlackAchievement : Achievement {
     override val id = "votingOnlyForBlack"
     override val name = "Сильная рука"
     override val description = "Будучи мирным, голосуйте только за черных (кроме попилов)"
-    override val levels = listOf(1, 2, 5, 12, 30)
+    override val levels = listOf(1, 3, 7, 20, 50)
     override fun check(game: PolemicaGame, position: Position): Int = game.check {
         assert { position.role() == Role.PEACE }
         val votes = game.getFinalVotes()
