@@ -6,6 +6,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 class PolemicaCheck(
     val night: Int,
     val role: Role,
-    val player: Int
-) {
-}
+    val player: Position
+)

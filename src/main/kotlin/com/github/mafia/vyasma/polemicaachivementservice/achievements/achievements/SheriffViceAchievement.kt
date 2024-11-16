@@ -2,8 +2,9 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements.achieveme
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getPositionRole
+import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
 import com.github.mafia.vyasma.polemicaachivementservice.utils.isRed
 
 object SheriffViceAchievement : Achievement {
@@ -11,11 +12,11 @@ object SheriffViceAchievement : Achievement {
     override val name = "Это мой шериф!"
     override val description = "Оставьте руль шерифу, будучи красным"
     override val levels = listOf(1, 2, 5, 12, 30)
-    override fun check(game: PolemicaGame, position: Int): Int {
+    override fun check(game: PolemicaGame, position: Position): Int {
         val lastWordVice =
             game.players.find { it.position == position }?.guess?.vice
-        return boolToInt(lastWordVice?.let { game.getPositionRole(it) } == Role.SHERIFF
-            && game.getPositionRole(position).isRed()
+        return boolToInt(lastWordVice?.let { game.getRole(it) } == Role.SHERIFF
+            && game.getRole(position).isRed()
         )
     }
 }

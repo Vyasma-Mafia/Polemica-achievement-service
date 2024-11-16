@@ -1,19 +1,27 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindAllMafsAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindSheriffAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FirstKilledFullGuessAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FoulsForWinOnCriticAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FullMafsAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.PartialMafsGuessAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SamuraiPathAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SheriffLiveAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SheriffViceAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SniperAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.StrongCityAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.StrongSheriffAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.VoteForBlackAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.VotingOnlyForBlackAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsBlackAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsDonAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsLastBlackAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinAsRedInLastAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinThreeToThreeLastAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithSelfKillAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithoutCriticAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
@@ -46,7 +54,15 @@ class AchievementServiceImpl(
         WinAsLastBlackAchievement,
         WinAsRedInLastAchievement,
         WinThreeToThreeLastAchievement,
-        PartialMafsGuessAchievement
+        PartialMafsGuessAchievement,
+        FindSheriffAchievement,
+        FindAllMafsAchievement,
+        FirstKilledFullGuessAchievement,
+        WinWithSelfKillAchievement,
+        SheriffLiveAchievement,
+        VotingOnlyForBlackAchievement,
+        WinWithoutCriticAchievement,
+        FoulsForWinOnCriticAchievement
     )
 
     private val achievementsMap = achievements.associateBy { it.id }
@@ -123,7 +139,7 @@ class AchievementServiceImpl(
         game.data.players.flatMap { player ->
             val checkResult = achievement.check(game.data, player.position)
             if (checkResult != 0) {
-                return listOf(
+                return@flatMap listOf(
                     AchievementService.AchievementGames.GamePostpositionForAchievement(
                         game.gameId,
                         game.gamePlace,

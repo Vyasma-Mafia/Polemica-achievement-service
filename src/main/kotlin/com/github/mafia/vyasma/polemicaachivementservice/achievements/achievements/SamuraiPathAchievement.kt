@@ -2,6 +2,7 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements.achieveme
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 
 object SamuraiPathAchievement : Achievement {
     override val id = "samuraiPath"
@@ -11,7 +12,7 @@ object SamuraiPathAchievement : Achievement {
     override val order: Int
         get() = 0
 
-    override fun check(game: PolemicaGame, position: Int): Int = 1
+    override fun check(game: PolemicaGame, position: Position): Int = 1
 }
 
 

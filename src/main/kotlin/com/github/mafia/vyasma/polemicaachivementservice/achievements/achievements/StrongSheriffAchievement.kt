@@ -3,16 +3,17 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements.achieveme
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGameResult
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getPositionRole
+import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
 
 object StrongSheriffAchievement : Achievement {
     override val id = "strongSheriff"
     override val name = "Сильный шериф"
     override val description = "Выиграйте за шерифа"
     override val levels = listOf(1, 3, 7, 15, 50)
-    override fun check(game: PolemicaGame, position: Int): Int = boolToInt(
-        game.getPositionRole(position) == Role.SHERIFF &&
+    override fun check(game: PolemicaGame, position: Position): Int = boolToInt(
+        game.getRole(position) == Role.SHERIFF &&
             game.result == PolemicaGameResult.RED_WIN
     )
 }

@@ -3,7 +3,7 @@ package com.github.mafia.vyasma.polemicaachivementservice.research
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.utils.getFinalVotes
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getPositionRole
+import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
 import org.springframework.stereotype.Service
 
 @Service
@@ -33,13 +33,13 @@ class ResearchServiceImpl(
                                 }
                             val votedByFourRed =
                                 votedByFour.filterValues { votes ->
-                                    votes.map { data.getPositionRole(it.position) }
+                                    votes.map { data.getRole(it.position) }
                                         .filter { it == Role.PEACE }.size == 4
                                 }
                                     .toList()
                             if (votedByFourRed.isNotEmpty()) {
                                 val vote = votedByFourRed.first()
-                                if (data.getPositionRole(vote.first) == Role.SHERIFF) {
+                                if (data.getRole(vote.first) == Role.SHERIFF) {
                                     toRed++
                                     games.add(
                                         ResearchVotedByFourRedVotesGame(
@@ -48,7 +48,7 @@ class ResearchServiceImpl(
                                             gameStarted = game.started
                                         )
                                     )
-                                } else if (data.getPositionRole(vote.first) == Role.DON) {
+                                } else if (data.getRole(vote.first) == Role.DON) {
                                     toBlack++
                                 }
                                 // 33

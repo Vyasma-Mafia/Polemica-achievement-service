@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 
 interface AchievementService {
     fun checkAchievements()
@@ -17,7 +18,7 @@ interface AchievementService {
         data class GamePostpositionForAchievement(
             val gameId: Long,
             val gamePlace: PolemicaGamePlace?,
-            val position: Int,
+            val position: Position,
             val checkResult: Int
         )
     }

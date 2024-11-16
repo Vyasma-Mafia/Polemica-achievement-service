@@ -6,12 +6,10 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import org.hibernate.validator.constraints.Range
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PolemicaPlayer(
-    @Range(min = 1, max = 10)
-    val position: Int,
+    val position: Position,
     val username: String,
     val role: Role,
     val techs: List<Foul>,

@@ -1,6 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements
 
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 
 interface Achievement {
     val id: String
@@ -10,7 +11,7 @@ interface Achievement {
     val order: Int
         get() = 100
 
-    fun check(game: PolemicaGame, position: Int): Int
+    fun check(game: PolemicaGame, position: Position): Int
 
     fun boolToInt(value: Boolean): Int = if (value) 1 else 0
 }

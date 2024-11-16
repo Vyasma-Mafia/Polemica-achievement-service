@@ -28,6 +28,7 @@ enum class StageType(override val value: String) : StringEnum {
     RESPEECH("reSpeech"),
     LIFT("lift"),
     COM_CHECK("comCheck"),
+    COM_KILL("comKill"),
     GAME_OVER("gameOver")
 }
 

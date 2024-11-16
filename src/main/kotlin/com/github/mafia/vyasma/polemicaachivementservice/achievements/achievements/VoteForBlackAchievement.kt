@@ -2,8 +2,9 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements.achieveme
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.utils.getFinalVotes
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getPositionRole
+import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
 import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlack
 import com.github.mafia.vyasma.polemicaachivementservice.utils.isRed
 
@@ -13,10 +14,10 @@ object VoteForBlackAchievement : Achievement {
     override val description =
         "На красном проголосуйте за уход черного (учитывается последнее голосование на круге, при попиле рука за подъем)"
     override val levels = listOf(1, 5, 25, 100, 500)
-    override fun check(game: PolemicaGame, position: Int): Int = if (game.getPositionRole(position).isRed()) {
+    override fun check(game: PolemicaGame, position: Position): Int = if (game.getRole(position).isRed()) {
         game.getFinalVotes()
             .filter { it.position == position }
-            .sumOf { finalVote -> finalVote.convicted.map { game.getPositionRole(it) }.filter { it.isBlack() }.size }
+            .sumOf { finalVote -> finalVote.convicted.map { game.getRole(it) }.filter { it.isBlack() }.size }
     } else {
         0
     }
