@@ -4,17 +4,18 @@ FROM gradle:jdk21 AS build
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy Gradle wrapper and build files
+# Copy only build configuration files (dependencies are resolved first to benefit from Docker layer caching)
 COPY build.gradle settings.gradle gradlew /app/
-
-# Copy Gradle wrapper and required directories (if not using wrapper, you can install Gradle before this step)
 COPY gradle /app/gradle
+
+# Download dependencies (this step is cached unless the dependencies change)
+RUN ./gradlew --no-daemon build || return 0
 
 # Copy the rest of the source code
 COPY src /app/src
 
-# Run the Gradle build (this will use the Gradle wrapper inside the container)
-RUN ./gradlew build
+# Final build of the project
+RUN ./gradlew --no-daemon build
 
 # STAGE 2: Create a minimal image to run the Kotlin app
 FROM openjdk:21-jdk-slim
