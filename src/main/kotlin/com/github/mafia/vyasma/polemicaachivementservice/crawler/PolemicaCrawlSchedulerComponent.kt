@@ -16,7 +16,7 @@ class PolemicaCrawlSchedulerComponent(val crawlerService: CrawlerService) {
     private fun update() {
         try {
             logger.info("Crawl start")
-            crawlerService.crawl()
+            crawlerService.crawl(true)
         } catch (e: Exception) {
             logger.error("Error on crawling: " + e.message, e)
         }

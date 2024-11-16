@@ -25,6 +25,8 @@ import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievemen
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameUserRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementUsersRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.slf4j.LoggerFactory
@@ -38,7 +40,9 @@ class AchievementServiceImpl(
     val gameRepository: GameRepository,
     val achievementUsersRepository: AchievementUsersRepository,
     val achievementTransactionalService: AchievementTransactionalService,
-    val achievementCheckGameStartedAfter: LocalDateTime
+    val achievementCheckGameStartedAfter: LocalDateTime,
+    private val achievementGameRepository: AchievementGameRepository,
+    private val achievementGameUserRepository: AchievementGameUserRepository
 ) : AchievementService {
     private val logger = LoggerFactory.getLogger(AchievementServiceImpl::class.java.name)
     private val achievements = listOf(
@@ -76,6 +80,16 @@ class AchievementServiceImpl(
         }
         logger.info("End check achievements")
     }
+
+    override fun recheckAchievements() {
+        logger.info("Start deleting gotten achievements")
+        achievementGameUserRepository.deleteAll()
+        achievementGameRepository.deleteAll()
+        achievementUsersRepository.deleteAll()
+        logger.info("End deleting gotten achievements")
+        checkAchievements()
+    }
+
 
     override fun getAchievements(
         gainsUsernames: List<String>,

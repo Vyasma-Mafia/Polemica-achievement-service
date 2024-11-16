@@ -8,6 +8,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 
 interface AchievementService {
     fun checkAchievements()
+    fun recheckAchievements()
     fun getAchievements(gainsUsernames: List<String>, ids: List<Long>): AchievementsWithGains
     fun getAchievementsGames(achievementId: String): AchievementGames
 

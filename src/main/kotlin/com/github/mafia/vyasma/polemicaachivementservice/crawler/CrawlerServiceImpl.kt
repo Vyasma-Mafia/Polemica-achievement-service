@@ -18,11 +18,17 @@ class CrawlerServiceImpl(
 ) : CrawlerService {
     private val logger = LoggerFactory.getLogger(CrawlerServiceImpl::class.java.name)
 
-
-    override fun crawl() {
+    override fun crawl(withStopOnDb: Boolean) {
         crawlClubs.forEach { crawlClub(it) }
         crawlCompetitions()
         achievementService.checkAchievements()
+    }
+
+    override fun reparseGames(fullDelete: Boolean) {
+        if (fullDelete) {
+            gameRepository.deleteAll()
+        }
+        crawl(false)
     }
 
     fun crawlCompetitions() {
