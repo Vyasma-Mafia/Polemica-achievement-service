@@ -31,10 +31,10 @@ class CrawlerServiceImpl(
         crawl(false)
     }
 
-    fun crawlCompetitions() {
+    fun crawlCompetitions(withStopOnDb: Boolean) {
         logger.info("Crawling competitions started")
         val competitions = polemicaClient.getCompetitions()
-        competitions.filter { it.city == "Санкт-Петербург" }.forEach { crawlCompetition(it) }
+        competitions.filter { it.city == "Санкт-Петербург" }.forEach { crawlCompetition(it, withStopOnDb) }
         logger.info("Crawling competitions finished")
     }
 
