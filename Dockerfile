@@ -9,13 +9,13 @@ COPY build.gradle settings.gradle gradlew /app/
 COPY gradle /app/gradle
 
 # Download dependencies (this step is cached unless the dependencies change)
-RUN ./gradlew --no-daemon build || return 0
+RUN ./gradlew build || return 0
 
 # Copy the rest of the source code
 COPY src /app/src
 
 # Final build of the project
-RUN ./gradlew --no-daemon build
+RUN ./gradlew build
 
 # STAGE 2: Create a minimal image to run the Kotlin app
 FROM openjdk:21-jdk-slim
