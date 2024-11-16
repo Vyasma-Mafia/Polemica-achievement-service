@@ -36,7 +36,8 @@ services:
       - backend
 
   achievement-service:
-    build: .
+    image: ghcr.io/vyasma-mafia/polemica-achievement-service:main
+    #    build: .
     container_name: achievement-service
     ports:
       - "8085:8080"
