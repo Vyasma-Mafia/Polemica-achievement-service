@@ -30,9 +30,10 @@ class AdminController(
 
     @GetMapping("/achievements/{achievementId}/games/_explain")
     fun explainGamesForAchievement(
-        @PathVariable(name = "achievementId") achievementId: String
+        @PathVariable(name = "achievementId") achievementId: String,
+        @RequestParam(name = "gameId", defaultValue = "0") gameId: Long?
     ): ResponseEntity<AchievementService.AchievementGames> {
-        return ResponseEntity.ok(achievementService.getAchievementsGames(achievementId))
+        return ResponseEntity.ok(achievementService.getAchievementsGames(achievementId, gameId))
     }
 
     @PostMapping("/games/_reparse")

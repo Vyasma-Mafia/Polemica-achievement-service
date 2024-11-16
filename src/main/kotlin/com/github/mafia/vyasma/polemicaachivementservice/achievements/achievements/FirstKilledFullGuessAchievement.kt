@@ -22,7 +22,7 @@ object FirstKilledFullGuessAchievement : Achievement {
         assert { firstKicked.position == position }
 
         val guess = position.guess() ?: return 0
-        assert { guess.mafs?.size?.plus(guess.civs?.size ?: 0) == 3 }
+        assert { (guess.mafs?.size ?: 0) + (guess.civs?.size ?: 0) == 3 }
         return boolToInt(
             guess.mafs?.all { it.role().isBlack() } == true &&
                 guess.civs?.all { it.role().isRed() } == true

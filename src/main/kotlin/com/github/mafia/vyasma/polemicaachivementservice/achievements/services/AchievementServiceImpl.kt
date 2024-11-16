@@ -138,10 +138,15 @@ class AchievementServiceImpl(
         }
     }
 
-    override fun getAchievementsGames(achievementId: String): AchievementService.AchievementGames {
+    override fun getAchievementsGames(achievementId: String, gameId: Long?): AchievementService.AchievementGames {
         val achievement = achievementsMap[achievementId] ?: throw IllegalArgumentException("Achievement not found")
 
-        return AchievementService.AchievementGames(gameRepository.findAll().flatMap { game ->
+        val games = if (gameId != null) {
+            gameRepository.findAllById(listOf(gameId))
+        } else {
+            gameRepository.findAll()
+        }
+        return AchievementService.AchievementGames(games.flatMap { game ->
             gameWithPositionsForAchievement(game, achievement)
         })
     }

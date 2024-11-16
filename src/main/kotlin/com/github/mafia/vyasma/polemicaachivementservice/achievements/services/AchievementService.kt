@@ -10,7 +10,7 @@ interface AchievementService {
     fun checkAchievements()
     fun recheckAchievements()
     fun getAchievements(gainsUsernames: List<String>, ids: List<Long>): AchievementsWithGains
-    fun getAchievementsGames(achievementId: String): AchievementGames
+    fun getAchievementsGames(achievementId: String, gameId: Long?): AchievementGames
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     data class AchievementGames(
