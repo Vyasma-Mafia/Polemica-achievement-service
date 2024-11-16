@@ -1,6 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementCategory
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
@@ -10,6 +11,7 @@ object FindSheriffAchievement : Achievement {
     override val id = "findSheriff"
     override val name = "Я нашел тебя!"
     override val description = "Найдите шерифа за дона в первую ночь"
+    override val category = AchievementCategory.BLACK
     override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Position): Int = game.check {
         if (position.role() != Role.DON) {

@@ -1,6 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementCategory
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
@@ -12,6 +13,7 @@ object FindAllMafsAchievement : Achievement {
     override val id = "findAllMafs"
     override val name = "Не скрыться"
     override val description = "Шерифом проверить всех чёрных за первые три ночи"
+    override val category = AchievementCategory.RED
     override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Position): Int = game.check {
         if (position.role() != Role.SHERIFF) {

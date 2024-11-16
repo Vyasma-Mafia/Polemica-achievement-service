@@ -10,6 +10,8 @@ interface Achievement {
     val levels: List<Int>
     val order: Int
         get() = 100
+    val category: AchievementCategory
+        get() = AchievementCategory.COMMON
 
     fun check(game: PolemicaGame, position: Position): Int
 
