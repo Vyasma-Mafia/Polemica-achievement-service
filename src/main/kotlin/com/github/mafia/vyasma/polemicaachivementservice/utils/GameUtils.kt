@@ -100,7 +100,7 @@ fun PolemicaGame.getKickedFromTable(): List<KickedPlayer> {
 }
 
 fun PolemicaGame.getCriticDay(): Int? {
-    val lastDay = (this.stop?.day ?: return null) + 1
+    val lastDay = this.stage.day + 1
     var red = 7
     var black = 3
     val kickedPlayer = getKickedFromTable().groupBy { it.gamePhase.num }
