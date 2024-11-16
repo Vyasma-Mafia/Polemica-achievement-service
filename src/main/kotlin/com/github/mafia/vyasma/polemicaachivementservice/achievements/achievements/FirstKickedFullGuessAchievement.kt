@@ -8,7 +8,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.utils.getKickedFromTabl
 import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlack
 import com.github.mafia.vyasma.polemicaachivementservice.utils.isRed
 
-object FirstKilledFullGuessAchievement : Achievement {
+object FirstKickedFullGuessAchievement : Achievement {
     override val id = "firstKickedFullGuess"
     override val name = "Цветопопадатель"
     override val description = "Будучи первым покинувшим стол красным, оставьте три верных цвета в лучший ход"
@@ -24,8 +24,8 @@ object FirstKilledFullGuessAchievement : Achievement {
         val guess = position.guess() ?: return 0
         assert { (guess.mafs?.size ?: 0) + (guess.civs?.size ?: 0) == 3 }
         return boolToInt(
-            guess.mafs?.all { it.role().isBlack() } == true &&
-                guess.civs?.all { it.role().isRed() } == true
+            guess.mafs?.all { it.role().isBlack() } ?: true &&
+                guess.civs?.all { it.role().isRed() } ?: true
         )
     }
 }

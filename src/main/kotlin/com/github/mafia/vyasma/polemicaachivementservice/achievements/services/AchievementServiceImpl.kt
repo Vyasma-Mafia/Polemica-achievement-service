@@ -3,7 +3,7 @@ package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindAllMafsAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindSheriffAchievement
-import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FirstKilledFullGuessAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FirstKickedFullGuessAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FoulsForWinOnCriticAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FullMafsAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.PartialMafsGuessAchievement
@@ -61,7 +61,7 @@ class AchievementServiceImpl(
         PartialMafsGuessAchievement,
         FindSheriffAchievement,
         FindAllMafsAchievement,
-        FirstKilledFullGuessAchievement,
+        FirstKickedFullGuessAchievement,
         WinWithSelfKillAchievement,
         SheriffLiveAchievement,
         VotingOnlyForBlackAchievement,
