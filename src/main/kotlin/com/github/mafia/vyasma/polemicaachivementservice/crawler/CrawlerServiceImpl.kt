@@ -19,8 +19,8 @@ class CrawlerServiceImpl(
     private val logger = LoggerFactory.getLogger(CrawlerServiceImpl::class.java.name)
 
     override fun crawl(withStopOnDb: Boolean) {
-        crawlClubs.forEach { crawlClub(it) }
-        crawlCompetitions()
+        crawlClubs.forEach { crawlClub(it, withStopOnDb) }
+        crawlCompetitions(withStopOnDb)
         achievementService.checkAchievements()
     }
 
@@ -38,12 +38,12 @@ class CrawlerServiceImpl(
         logger.info("Crawling competitions finished")
     }
 
-    fun crawlCompetition(competition: PolemicaClient.PolemicaCompetition) {
+    fun crawlCompetition(competition: PolemicaClient.PolemicaCompetition, withStopOnDb: Boolean) {
         val games = polemicaClient.getGamesFromCompetition(competition.id)
         val gamesInBd = gameRepository.findAllById(games.map { it.id }).map { it.gameId }.toSet()
         games
             .filter { it.result != null }
-            .filter { it.id !in gamesInBd }
+            .filter { it.id !in gamesInBd && withStopOnDb }
             .forEach {
                 try {
                     val res = polemicaClient.getGameFromCompetition(
@@ -66,7 +66,7 @@ class CrawlerServiceImpl(
             }
     }
 
-    fun crawlClub(clubId: Long) {
+    fun crawlClub(clubId: Long, withStopOnDb: Boolean) {
         logger.info("Crawl club $clubId started")
         var offset = 0L
         do {
@@ -74,7 +74,7 @@ class CrawlerServiceImpl(
             val gamesInBd = gameRepository.findAllById(games.map { it.id }).map { it.gameId }.toSet()
             games
                 .filter { it.result != null }
-                .filter { it.id !in gamesInBd }
+                .filter { it.id !in gamesInBd && withStopOnDb }
                 .forEach {
                     try {
                         val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(clubId, it.id, 4))
