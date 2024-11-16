@@ -43,7 +43,7 @@ class CrawlerServiceImpl(
         val gamesInBd = gameRepository.findAllById(games.map { it.id }).map { it.gameId }.toSet()
         games
             .filter { it.result != null }
-            .filter { it.id !in gamesInBd && withStopOnDb }
+            .filter { it.id !in gamesInBd || !withStopOnDb }
             .forEach {
                 try {
                     val res = polemicaClient.getGameFromCompetition(
@@ -74,7 +74,7 @@ class CrawlerServiceImpl(
             val gamesInBd = gameRepository.findAllById(games.map { it.id }).map { it.gameId }.toSet()
             games
                 .filter { it.result != null }
-                .filter { it.id !in gamesInBd && withStopOnDb }
+                .filter { it.id !in gamesInBd || !withStopOnDb }
                 .forEach {
                     try {
                         val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(clubId, it.id, 4))
