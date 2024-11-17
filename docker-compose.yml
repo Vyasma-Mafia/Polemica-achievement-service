@@ -36,8 +36,8 @@ services:
       - backend
 
   achievement-service:
-    image: ghcr.io/vyasma-mafia/polemica-achievement-service:main
-    #    build: .
+    #    image: ghcr.io/vyasma-mafia/polemica-achievement-service:main
+    build: .
     container_name: achievement-service
     ports:
       - "8085:8080"
@@ -52,6 +52,20 @@ services:
         condition: service_healthy  # Start service only after DB is healthy
       migration:
         condition: service_completed_successfully  # Ensure migrations complete before service starts
+    networks:
+      - backend
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
     networks:
       - backend
 
