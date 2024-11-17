@@ -115,4 +115,4 @@ jobs:
             echo "Pulling the latest Docker image..."
             docker compose pull
             echo "Restarting services..."
-            docker compose -env-file .db.env up -d
+            docker compose up -d
