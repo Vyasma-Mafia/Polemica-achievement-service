@@ -90,7 +90,7 @@ class CrawlerServiceImpl(
                     }
                 }
             offset += GET_LIMIT
-        } while (gamesInBd.size < games.size)
+        } while ((!withStopOnDb && games.isNotEmpty()) || gamesInBd.size < games.size)
         logger.info("Crawl club $clubId finished")
     }
 }
