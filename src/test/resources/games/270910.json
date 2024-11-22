@@ -1,0 +1,533 @@
+{
+  "started": "2024-11-21T19:32:20.623579",
+  "id": 272910,
+  "master": 86666,
+  "referee": {
+    "id": 86666,
+    "username": "Ставит чай",
+    "region": "RU",
+    "city": null,
+    "avatar": null
+  },
+  "scoringVersion": "3.0",
+  "scoringType": 1,
+  "tags": [],
+  "version": 4,
+  "players": [
+    {
+      "position": 1,
+      "username": "Проигрыватель",
+      "avatar": null,
+      "role": 2,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T19:41:45.966935",
+          "stage": {
+            "type": "speech",
+            "day": 1,
+            "player": 5
+          }
+        }
+      ],
+      "player": {
+        "id": 88005,
+        "username": "Проигрыватель",
+        "avatar": null
+      },
+      "guess": {
+        "vice": 10
+      }
+    },
+    {
+      "position": 2,
+      "username": "Берлиоз",
+      "avatar": "87380/f0d9baa27fa30cc61d35da08c3fb9231.jpeg",
+      "role": 0,
+      "techs": [],
+      "fouls": [],
+      "player": {
+        "id": 87380,
+        "username": "Берлиоз",
+        "avatar": "87380/f0d9baa27fa30cc61d35da08c3fb9231.jpeg"
+      }
+    },
+    {
+      "position": 3,
+      "username": "Kilme",
+      "avatar": null,
+      "role": 2,
+      "techs": [],
+      "fouls": [],
+      "player": {
+        "id": 89473,
+        "username": "Kilme",
+        "avatar": null
+      }
+    },
+    {
+      "position": 4,
+      "username": "Poly A",
+      "avatar": null,
+      "role": 2,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T19:58:35.269240",
+          "stage": {
+            "type": "speech",
+            "day": 2,
+            "player": 5
+          }
+        },
+        {
+          "time": "2024-11-21T20:02:35.451057",
+          "stage": {
+            "type": "speech",
+            "day": 2,
+            "player": 9
+          }
+        }
+      ],
+      "player": {
+        "id": 88809,
+        "username": "Poly A",
+        "avatar": null
+      }
+    },
+    {
+      "position": 5,
+      "username": "APEX",
+      "avatar": null,
+      "role": 1,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T19:43:18.826319",
+          "stage": {
+            "type": "speech",
+            "day": 1,
+            "player": 7
+          }
+        },
+        {
+          "time": "2024-11-21T19:57:44.644890",
+          "stage": {
+            "type": "speech",
+            "day": 2,
+            "player": 4
+          }
+        },
+        {
+          "time": "2024-11-21T20:03:41.524113",
+          "stage": {
+            "type": "speech",
+            "day": 2,
+            "player": 10
+          }
+        },
+        {
+          "time": "2024-11-21T20:05:45.477144",
+          "stage": {
+            "type": "voted",
+            "day": 2,
+            "player": 3,
+            "voting": 1
+          }
+        }
+      ],
+      "player": {
+        "id": 62577,
+        "username": "APEX",
+        "avatar": null
+      },
+      "disqual": {
+        "type": "voted",
+        "day": 2,
+        "player": 3,
+        "voting": 1
+      }
+    },
+    {
+      "position": 6,
+      "username": "Лeший",
+      "avatar": null,
+      "role": 2,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T20:04:21.898911",
+          "stage": {
+            "type": "voting",
+            "day": 2,
+            "voting": 1
+          }
+        }
+      ],
+      "player": {
+        "id": 88801,
+        "username": "Лeший",
+        "avatar": null
+      },
+      "guess": {
+        "mafs": [
+          10
+        ]
+      }
+    },
+    {
+      "position": 7,
+      "username": "Рихтер",
+      "avatar": null,
+      "role": 1,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T19:54:51.855495",
+          "stage": {
+            "type": "shooted",
+            "day": 2,
+            "player": 8
+          }
+        }
+      ],
+      "player": {
+        "id": 86508,
+        "username": "Рихтер",
+        "avatar": null
+      }
+    },
+    {
+      "position": 8,
+      "username": "Йети",
+      "avatar": null,
+      "role": 3,
+      "techs": [],
+      "fouls": [],
+      "player": {
+        "id": 17297,
+        "username": "Йети",
+        "avatar": null
+      }
+    },
+    {
+      "position": 9,
+      "username": "msuliana",
+      "avatar": null,
+      "role": 2,
+      "techs": [],
+      "fouls": [],
+      "player": {
+        "id": 87889,
+        "username": "msuliana",
+        "avatar": null
+      }
+    },
+    {
+      "position": 10,
+      "username": "Пастырь (Фёдор)",
+      "avatar": "1.png",
+      "role": 2,
+      "techs": [],
+      "fouls": [
+        {
+          "time": "2024-11-21T19:51:30.077499",
+          "stage": {
+            "type": "voted",
+            "day": 1,
+            "player": 1,
+            "voting": 2
+          }
+        },
+        {
+          "time": "2024-11-21T20:07:43.241354",
+          "stage": {
+            "type": "shooted",
+            "day": 3,
+            "player": 6
+          }
+        }
+      ],
+      "player": {
+        "id": 86654,
+        "username": "Пастырь (Фёдор)",
+        "avatar": "1.png"
+      }
+    }
+  ],
+  "stage": {
+    "type": "gameOver",
+    "day": 4,
+    "player": 1
+  },
+  "checks": [
+    {
+      "night": 1,
+      "role": 3,
+      "player": 6
+    }
+  ],
+  "shots": [
+    {
+      "night": 1,
+      "shooter": 2,
+      "victim": 8
+    },
+    {
+      "night": 1,
+      "shooter": 5,
+      "victim": 8
+    },
+    {
+      "night": 1,
+      "shooter": 7,
+      "victim": 8
+    },
+    {
+      "night": 2,
+      "shooter": 2,
+      "victim": 6
+    },
+    {
+      "night": 2,
+      "shooter": 7,
+      "victim": 6
+    },
+    {
+      "night": 3,
+      "shooter": 2,
+      "victim": 10
+    },
+    {
+      "night": 3,
+      "shooter": 7,
+      "victim": 10
+    }
+  ],
+  "votes": [
+    {
+      "day": 1,
+      "num": 0,
+      "voter": 2,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 0,
+      "voter": 5,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 0,
+      "voter": 9,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 0,
+      "voter": 10,
+      "candidate": 4
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 1,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 2,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 3,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 4,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 5,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 6,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 7,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 8,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 9,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 1,
+      "voter": 10,
+      "candidate": 4
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 1,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 2,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 3,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 4,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 5,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 6,
+      "candidate": 1
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 7,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 8,
+      "candidate": 2
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 9,
+      "candidate": 3
+    },
+    {
+      "day": 1,
+      "num": 2,
+      "voter": 10,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 0,
+      "voter": 2,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 0,
+      "voter": 6,
+      "candidate": 7
+    },
+    {
+      "day": 2,
+      "num": 0,
+      "voter": 10,
+      "candidate": 5
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 2,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 3,
+      "candidate": 7
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 4,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 5,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 6,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 7,
+      "candidate": 3
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 9,
+      "candidate": 7
+    },
+    {
+      "day": 2,
+      "num": 1,
+      "voter": 10,
+      "candidate": 3
+    },
+    {
+      "day": 3,
+      "num": 0,
+      "voter": 4,
+      "candidate": 10
+    },
+    {
+      "day": 3,
+      "num": 0,
+      "voter": 10,
+      "candidate": 7
+    }
+  ],
+  "bonuses": [],
+  "result": 1
+}

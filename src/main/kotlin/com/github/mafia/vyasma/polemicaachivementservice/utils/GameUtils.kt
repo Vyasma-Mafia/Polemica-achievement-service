@@ -43,6 +43,9 @@ fun PolemicaGame.getRole(position: Position): Role {
 fun PolemicaGame.getFinalVotes(): List<FinalVote> {
     return this.votes.groupBy { it.day }.map { (day, votes) ->
         val votesNumMax = votes.map { it.num }.max()
+        if (votesNumMax == 0) {
+            return@map emptyList()
+        }
         val lastVotes = votes.dropWhile { it.num < votesNumMax }
         val realVotes = lastVotes.filter { it.num == votesNumMax }
         val votingResult = realVotes.groupBy { it.candidate } // candidate -> [voters]
