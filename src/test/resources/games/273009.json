@@ -1,0 +1,71 @@
+{
+  "started": "2024-11-21T22:30:00.426086", "id": 273009, "master": 80830, "referee": {"id": 80830, "username": "Мерлин", "region": null, "city": null, "avatar": null}, "scoringVersion": "3.0", "scoringType": 1, "tags": [], "version": 4, "players": [
+  {
+    "position": 1, "username": "Ставит чай", "avatar": null, "role": 2, "techs": [], "fouls": [
+    {"time": "2024-11-21T22:58:11.480130", "stage": {"type": "speech", "day": 3, "player": 3}}
+  ], "player": {"id": 86666, "username": "Ставит чай", "avatar": null}
+  }, {
+    "position": 2, "username": "Kilme", "avatar": null, "role": 2, "techs": [], "fouls": [], "player": {"id": 89473, "username": "Kilme", "avatar": null}, "guess": {
+      "mafs": [1, 4], "civs": [3]
+    }
+  },
+  {"position": 3, "username": "Деким", "avatar": "85795/96f650be9da877defe0e918a1038bf98.jpeg", "role": 1, "techs": [], "fouls": [], "player": {"id": 85795, "username": "Деким", "avatar": "85795/96f650be9da877defe0e918a1038bf98.jpeg"}},
+  {
+    "position": 4, "username": "АРЕХ", "avatar": "86876/2cedb687944a059bd2546b952219fa21.jpeg", "role": 3, "techs": [], "fouls": [
+    {"time": "2024-11-21T22:47:40.497235", "stage": {"type": "speech", "day": 2, "player": 7}}
+  ], "player": {"id": 86876, "username": "АРЕХ", "avatar": "86876/2cedb687944a059bd2546b952219fa21.jpeg"}
+  },
+  {"position": 5, "username": "Рихтер", "avatar": null, "role": 2, "techs": [], "fouls": [], "player": {"id": 86508, "username": "Рихтер", "avatar": null}},
+  {"position": 6, "username": "Лeший", "avatar": null, "role": 2, "techs": [], "fouls": [], "player": {"id": 88801, "username": "Лeший", "avatar": null}},
+  {
+    "position": 7, "username": "Проигрыватель", "avatar": null, "role": 2, "techs": [], "fouls": [
+    {"time": "2024-11-21T22:51:27.963122", "stage": {"type": "voted", "day": 2, "player": 4, "voting": 1}},
+    {"time": "2024-11-21T22:51:46.663286", "stage": {"type": "voted", "day": 2, "player": 4, "voting": 1}},
+    {"time": "2024-11-21T22:51:55.179617", "stage": {"type": "voted", "day": 2, "player": 4, "voting": 1}}
+  ], "player": {"id": 88005, "username": "Проигрыватель", "avatar": null}
+  }, {
+    "position": 8, "username": "Куб", "avatar": null, "role": 2, "techs": [], "fouls": [
+      {"time": "2024-11-21T22:48:35.413122", "stage": {"type": "speech", "day": 2, "player": 9}}
+    ], "player": {"id": 86858, "username": "Куб", "avatar": null}
+  },
+  {"position": 9, "username": "Баракуда", "avatar": "86620/b9b851a82d8fb576d1e794a1896cc0bd.jpeg", "role": 0, "techs": [], "fouls": [], "player": {"id": 86620, "username": "Баракуда", "avatar": "86620/b9b851a82d8fb576d1e794a1896cc0bd.jpeg"}},
+  {
+    "position": 10, "username": "Велосипедостроитель", "avatar": "73496/4bfa7a7aeddd7608423750044997eaea.jpeg", "role": 1, "techs": [], "fouls": [
+    {"time": "2024-11-21T22:57:32.296966", "stage": {"type": "speech", "day": 3, "player": 1}},
+    {"time": "2024-11-21T22:58:18.979917", "stage": {"type": "speech", "day": 3, "player": 3}}
+  ], "player": {"id": 73496, "username": "Велосипедостроитель", "avatar": "73496/4bfa7a7aeddd7608423750044997eaea.jpeg"}
+  }
+], "stage": {"type": "gameOver", "day": 4, "player": 1}, "checks": [
+  {"night": 1, "role": 0, "player": 8}, {"night": 2, "role": 0, "player": 4}, {"night": 1, "role": 3, "player": 10}
+], "shots": [
+  {"night": 1, "shooter": 3, "victim": 2}, {"night": 1, "shooter": 9, "victim": 2},
+  {"night": 1, "shooter": 10, "victim": 2}, {"night": 2, "shooter": 3, "victim": 1},
+  {"night": 2, "shooter": 9, "victim": 1}, {"night": 2, "shooter": 10, "victim": 5},
+  {"night": 3, "shooter": 3, "victim": 5}, {"night": 3, "shooter": 9, "victim": 5},
+  {"night": 3, "shooter": 10, "victim": 5}
+], "votes": [
+  {"day": 1, "num": 0, "voter": 4, "candidate": 1}, {"day": 1, "num": 0, "voter": 9, "candidate": 6},
+  {"day": 1, "num": 0, "voter": 10, "candidate": 2}, {"day": 1, "num": 1, "voter": 1, "candidate": 2},
+  {"day": 1, "num": 1, "voter": 2, "candidate": 1}, {"day": 1, "num": 1, "voter": 3, "candidate": 1},
+  {"day": 1, "num": 1, "voter": 4, "candidate": 1}, {"day": 1, "num": 1, "voter": 5, "candidate": 1},
+  {"day": 1, "num": 1, "voter": 6, "candidate": 1}, {"day": 1, "num": 1, "voter": 7, "candidate": 2},
+  {"day": 1, "num": 1, "voter": 8, "candidate": 2}, {"day": 1, "num": 1, "voter": 9, "candidate": 2},
+  {"day": 1, "num": 1, "voter": 10, "candidate": 2}, {"day": 1, "num": 2, "voter": 1, "candidate": 2},
+  {"day": 1, "num": 2, "voter": 2, "candidate": 1}, {"day": 1, "num": 2, "voter": 3, "candidate": 1},
+  {"day": 1, "num": 2, "voter": 4, "candidate": 1}, {"day": 1, "num": 2, "voter": 5, "candidate": 1},
+  {"day": 1, "num": 2, "voter": 6, "candidate": 1}, {"day": 1, "num": 2, "voter": 7, "candidate": 2},
+  {"day": 1, "num": 2, "voter": 8, "candidate": 2}, {"day": 1, "num": 2, "voter": 9, "candidate": 2},
+  {"day": 1, "num": 2, "voter": 10, "candidate": 2}, {"day": 1, "voter": 2, "candidate": 1},
+  {"day": 2, "num": 0, "voter": 4, "candidate": 10}, {"day": 2, "num": 0, "voter": 9, "candidate": 4},
+  {"day": 2, "num": 0, "voter": 10, "candidate": 7}, {"day": 2, "num": 1, "voter": 1, "candidate": 10},
+  {"day": 2, "num": 1, "voter": 3, "candidate": 4}, {"day": 2, "num": 1, "voter": 4, "candidate": 10},
+  {"day": 2, "num": 1, "voter": 5, "candidate": 7}, {"day": 2, "num": 1, "voter": 6, "candidate": 4},
+  {"day": 2, "num": 1, "voter": 7, "candidate": 4}, {"day": 2, "num": 1, "voter": 8, "candidate": 4},
+  {"day": 2, "num": 1, "voter": 9, "candidate": 4}, {"day": 2, "num": 1, "voter": 10, "candidate": 4},
+  {"day": 3, "num": 0, "voter": 5, "candidate": 10}, {"day": 3, "num": 0, "voter": 8, "candidate": 1},
+  {"day": 3, "num": 1, "voter": 1, "candidate": 10}, {"day": 3, "num": 1, "voter": 3, "candidate": 1},
+  {"day": 3, "num": 1, "voter": 5, "candidate": 1}, {"day": 3, "num": 1, "voter": 6, "candidate": 1},
+  {"day": 3, "num": 1, "voter": 7, "candidate": 10}, {"day": 3, "num": 1, "voter": 8, "candidate": 1},
+  {"day": 3, "num": 1, "voter": 9, "candidate": 1}, {"day": 3, "num": 1, "voter": 10, "candidate": 1}
+], "bonuses": [], "result": 1
+}
