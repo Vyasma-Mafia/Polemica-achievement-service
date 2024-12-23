@@ -15,4 +15,8 @@
     <changeSet id="add_competition_games" author="chulkov-alex">
         <sqlFile path="sql/add_competition_games.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="remove_username_unique" author="chulkov-alex">
+        <sqlFile path="sql/remove_username_unique.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>

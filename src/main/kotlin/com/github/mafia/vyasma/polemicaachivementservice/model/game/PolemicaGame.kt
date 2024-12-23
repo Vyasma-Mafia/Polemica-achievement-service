@@ -22,5 +22,6 @@ data class PolemicaGame(
     val bonuses: List<PolemicaBonus>,
     val started: LocalDateTime,
     val stop: Stage?,
+    val isLive: Boolean?,
     val result: PolemicaGameResult?
 )

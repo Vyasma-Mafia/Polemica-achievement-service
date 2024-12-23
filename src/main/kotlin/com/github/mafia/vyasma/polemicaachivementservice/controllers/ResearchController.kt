@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -14,7 +15,33 @@ class ResearchController(val researchService: ResearchService) {
 
     @Operation(hidden = true)
     @GetMapping("/gamesWhereFourRedVotesByPerson")
-    fun explainGamesForAchievement(): ResponseEntity<ResearchVotedByFourRedVotesAnswer> {
+    fun gamesWhereFourRedVotesByPerson(): ResponseEntity<ResearchVotedByFourRedVotesAnswer> {
         return ResponseEntity.ok(researchService.getGamesWhereFourRedVotesByPerson())
+    }
+
+    @Operation(hidden = true)
+    @GetMapping("/majorPairs")
+    fun majorPairs(
+        @RequestParam userIds: List<Long>,
+    ): ResponseEntity<String> {
+        return ResponseEntity.ok(researchService.getMajorPairs(userIds))
+    }
+
+    @Operation(hidden = true)
+    @GetMapping("/blackMoveTeamWinStat")
+    fun getBlackMoveTeamWinStat(): ResponseEntity<String> {
+        return ResponseEntity.ok(researchService.getBlackMoveTeamWinStat())
+    }
+
+    @Operation(hidden = true)
+    @GetMapping("/blackMoveRefereeStat")
+    fun getBlackRefereeStat(): ResponseEntity<String> {
+        return ResponseEntity.ok(researchService.getBlackMoveRefereeStat())
+    }
+
+    @Operation(hidden = true)
+    @GetMapping("/twoTwoTwoTwoDivInNinth")
+    fun getTwoTwoTwoTwoDivInNinth(): ResponseEntity<Any> {
+        return ResponseEntity.ok(researchService.getTwoTwoTwoTwoDivInNinth())
     }
 }
