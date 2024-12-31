@@ -39,9 +39,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.liquibase:liquibase-core'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    implementation 'com.github.Vyasma-Mafia:polemica-library:1.0.7'
+    implementation 'com.github.Vyasma-Mafia:polemica-library:1.1.0'
 
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator:3.3.5'
