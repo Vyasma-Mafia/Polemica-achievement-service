@@ -1,13 +1,13 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.Position
+import com.github.mafia.vyasma.polemica.library.utils.getRole
+import com.github.mafia.vyasma.polemica.library.utils.isRed
+import com.github.mafia.vyasma.polemica.library.utils.isRedWin
+import com.github.mafia.vyasma.polemica.library.utils.playersOnTable
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementCategory
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isRed
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isRedWin
-import com.github.mafia.vyasma.polemicaachivementservice.utils.playersOnTable
 
 object WinAsRedInLastAchievement : Achievement {
     override val id = "winAsRedInLast"

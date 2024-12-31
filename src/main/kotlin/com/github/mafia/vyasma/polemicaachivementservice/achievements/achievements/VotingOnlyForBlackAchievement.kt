@@ -1,13 +1,13 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.Position
+import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.check
+import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
+import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementCategory
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
-import com.github.mafia.vyasma.polemicaachivementservice.utils.check
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getFinalVotes
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlack
 
 object VotingOnlyForBlackAchievement : Achievement {
     override val id = "votingOnlyForBlack"

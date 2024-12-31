@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
 import org.junit.Assert
 import org.springframework.util.ResourceUtils
 

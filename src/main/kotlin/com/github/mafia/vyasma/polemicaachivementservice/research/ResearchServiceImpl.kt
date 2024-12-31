@@ -1,12 +1,12 @@
 package com.github.mafia.vyasma.polemicaachivementservice.research
 
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
+import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
+import com.github.mafia.vyasma.polemica.library.utils.getRole
+import com.github.mafia.vyasma.polemica.library.utils.isBlack
+import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getFinalVotes
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getRole
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlack
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlackWin
 import org.springframework.stereotype.Service
 
 @Service

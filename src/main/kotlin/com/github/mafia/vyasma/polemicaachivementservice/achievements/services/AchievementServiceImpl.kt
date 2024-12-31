@@ -1,5 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindAllMafsAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FindSheriffAchievement
@@ -22,7 +23,6 @@ import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievemen
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinThreeToThreeLastAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithSelfKillAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithoutCriticAchievement
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameRepository

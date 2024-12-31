@@ -1,6 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.research
 
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
 import java.time.LocalDateTime
 
 interface ResearchService {

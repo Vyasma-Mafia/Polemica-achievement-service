@@ -1,11 +1,11 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.Position
+import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.check
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.AchievementCategory
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Role
-import com.github.mafia.vyasma.polemicaachivementservice.utils.check
 
 object FindSheriffAchievement : Achievement {
     override val id = "findSheriff"

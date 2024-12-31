@@ -1,7 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.model.jpa
 
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity

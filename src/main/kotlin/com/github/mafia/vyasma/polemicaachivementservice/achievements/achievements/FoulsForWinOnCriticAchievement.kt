@@ -1,14 +1,14 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.Position
+import com.github.mafia.vyasma.polemica.library.utils.check
+import com.github.mafia.vyasma.polemica.library.utils.getCriticDay
+import com.github.mafia.vyasma.polemica.library.utils.isBlack
+import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
+import com.github.mafia.vyasma.polemica.library.utils.isRed
+import com.github.mafia.vyasma.polemica.library.utils.isRedWin
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGame
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
-import com.github.mafia.vyasma.polemicaachivementservice.utils.check
-import com.github.mafia.vyasma.polemicaachivementservice.utils.getCriticDay
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlack
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isBlackWin
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isRed
-import com.github.mafia.vyasma.polemicaachivementservice.utils.isRedWin
 
 object FoulsForWinOnCriticAchievement : Achievement {
     override val id = "foulsForWinOnCritic"

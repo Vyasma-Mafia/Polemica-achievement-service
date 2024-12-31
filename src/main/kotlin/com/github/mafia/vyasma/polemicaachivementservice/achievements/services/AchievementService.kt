@@ -1,10 +1,10 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
+import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaUser
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.Position
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
 
 interface AchievementService {
     fun checkAchievements()

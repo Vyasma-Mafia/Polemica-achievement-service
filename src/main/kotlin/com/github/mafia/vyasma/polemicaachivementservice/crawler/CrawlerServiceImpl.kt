@@ -1,8 +1,9 @@
 package com.github.mafia.vyasma.polemicaachivementservice.crawler
 
+import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
-import com.github.mafia.vyasma.polemicaachivementservice.model.game.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

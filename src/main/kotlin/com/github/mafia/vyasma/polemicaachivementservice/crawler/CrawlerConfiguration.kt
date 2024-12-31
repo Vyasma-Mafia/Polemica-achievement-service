@@ -1,5 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.crawler
 
+import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
+import com.github.mafia.vyasma.polemica.library.client.PolemicaClientImpl
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

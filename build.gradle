@@ -6,7 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
 }
 
-group = 'com.github.mafia.vyasma'
+group = 'com.github.Vyasma-mafia'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -26,6 +26,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -39,6 +40,8 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    implementation 'com.github.Vyasma-Mafia:polemica-library:1.0.7'
 
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator:3.3.5'

@@ -1,4 +1,4 @@
-package com.github.mafia.vyasma.polemicaachivementservice.model.game
+package com.github.mafia.vyasma.polemicaachivementservice.model.jpa
 
 import jakarta.persistence.Embeddable
 
