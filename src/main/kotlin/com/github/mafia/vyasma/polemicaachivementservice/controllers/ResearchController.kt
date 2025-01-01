@@ -1,5 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
+import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchPairStat
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchService
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchVotedByFourRedVotesAnswer
 import io.swagger.v3.oas.annotations.Operation
@@ -17,6 +18,16 @@ class ResearchController(val researchService: ResearchService) {
     @GetMapping("/gamesWhereFourRedVotesByPerson")
     fun gamesWhereFourRedVotesByPerson(): ResponseEntity<ResearchVotedByFourRedVotesAnswer> {
         return ResponseEntity.ok(researchService.getGamesWhereFourRedVotesByPerson())
+    }
+
+    @GetMapping("/pairStat")
+    fun getPairStat(
+        @RequestParam("firstId") firstId: Long,
+        @RequestParam("secondId") secondId: Long
+    ): ResponseEntity<ResearchPairStat> {
+        return ResponseEntity.ok(
+            researchService.getPairStat(firstId, secondId)
+        )
     }
 
     @Operation(hidden = true)

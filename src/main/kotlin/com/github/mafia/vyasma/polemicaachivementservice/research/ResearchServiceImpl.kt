@@ -1,17 +1,23 @@
 package com.github.mafia.vyasma.polemicaachivementservice.research
 
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
 import com.github.mafia.vyasma.polemica.library.utils.getRole
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
+import com.github.mafia.vyasma.polemica.library.utils.isRed
+import com.github.mafia.vyasma.polemica.library.utils.isRedWin
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
 class ResearchServiceImpl(
-    val gameRepository: GameRepository
+    val gameRepository: GameRepository,
+    private val userRepository: UserRepository
 ) : ResearchService {
     override fun getGamesWhereFourRedVotesByPerson(): ResearchVotedByFourRedVotesAnswer {
         var toRed = 0L
@@ -135,4 +141,52 @@ class ResearchServiceImpl(
         }
         return counter
     }
+
+    override fun getPairStat(firstId: Long, secondId: Long): ResearchPairStat {
+        val counter = ResearchPairStatCounter()
+        gameRepository.findAll().forEach { game ->
+            val data = game.data
+            if (data.players.any { it.player == firstId } && data.players.any { it.player == secondId }) {
+                val firstRole = data.players.first { it.player == firstId }.role
+                val secondRole = data.players.first { it.player == secondId }.role
+                val isRedWin = data.isRedWin()
+                counter.firstRedSecondRedWin += if (firstRole.isRed() && secondRole.isRed() && isRedWin) 1 else 0
+                counter.firstRedSecondRedTotal += if (firstRole.isRed() && secondRole.isRed()) 1 else 0
+                counter.firstRedSecondBlackWin += if (firstRole.isRed() && secondRole.isBlack() && isRedWin) 1 else 0
+                counter.firstRedSecondBlackTotal += if (firstRole.isRed() && secondRole.isBlack()) 1 else 0
+                counter.firstBlackSecondRedWin += if (firstRole.isBlack() && secondRole.isRed() && isRedWin) 1 else 0
+                counter.firstBlackSecondRedTotal += if (firstRole.isBlack() && secondRole.isRed()) 1 else 0
+                counter.firstBlackSecondBlackWin += if (firstRole.isBlack() && secondRole.isBlack() && isRedWin) 1 else 0
+                counter.firstBlackSecondBlackTotal += if (firstRole.isBlack() && secondRole.isBlack()) 1 else 0
+            }
+        }
+
+        return ResearchPairStat(
+            firstUser = getPolemicaUser(firstId),
+            secondUser = getPolemicaUser(secondId),
+            firstRedSecondRedWin = counter.firstRedSecondRedWin,
+            firstRedSecondRedTotal = counter.firstRedSecondRedTotal,
+            firstRedSecondBlackWin = counter.firstRedSecondBlackWin,
+            firstRedSecondBlackTotal = counter.firstRedSecondBlackTotal,
+            firstBlackSecondRedWin = counter.firstBlackSecondRedWin,
+            firstBlackSecondRedTotal = counter.firstBlackSecondRedTotal,
+            firstBlackSecondBlackWin = counter.firstBlackSecondBlackWin,
+            firstBlackSecondBlackTotal = counter.firstBlackSecondBlackTotal
+        )
+    }
+
+    private fun getPolemicaUser(userId: Long): PolemicaUser? {
+        return userRepository.findByIdOrNull(userId)?.let { PolemicaUser(it.userId, it.username) }
+    }
+
+    data class ResearchPairStatCounter(
+        var firstRedSecondRedWin: Long = 0,
+        var firstRedSecondRedTotal: Long = 0,
+        var firstRedSecondBlackWin: Long = 0,
+        var firstRedSecondBlackTotal: Long = 0,
+        var firstBlackSecondRedWin: Long = 0,
+        var firstBlackSecondRedTotal: Long = 0,
+        var firstBlackSecondBlackWin: Long = 0,
+        var firstBlackSecondBlackTotal: Long = 0
+    )
 }
