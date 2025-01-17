@@ -15,6 +15,13 @@ import org.springframework.web.bind.annotation.RestController
 class ResearchController(val researchService: ResearchService) {
 
     @Operation(hidden = true)
+    @GetMapping("/blank")
+    fun blank(): ResponseEntity<Void> {
+        researchService.blank()
+        return ResponseEntity.ok().build()
+    }
+
+    @Operation(hidden = true)
     @GetMapping("/gamesWhereFourRedVotesByPerson")
     fun gamesWhereFourRedVotesByPerson(): ResponseEntity<ResearchVotedByFourRedVotesAnswer> {
         return ResponseEntity.ok(researchService.getGamesWhereFourRedVotesByPerson())
@@ -36,6 +43,13 @@ class ResearchController(val researchService: ResearchService) {
         @RequestParam userIds: List<Long>,
     ): ResponseEntity<String> {
         return ResponseEntity.ok(researchService.getMajorPairs(userIds))
+    }
+
+    @GetMapping("/competitionsForUser")
+    fun competitionsForUser(
+        @RequestParam userId: Long,
+    ): ResponseEntity<String> {
+        return ResponseEntity.ok(researchService.getCompetitionsForUserCsv(userId))
     }
 
     @Operation(hidden = true)

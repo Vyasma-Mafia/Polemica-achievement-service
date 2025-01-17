@@ -11,6 +11,8 @@ interface ResearchService {
     fun getBlackMoveRefereeStat(): String
     fun getTwoTwoTwoTwoDivInNinth(): Map<Int, Int>
     fun getPairStat(firstId: Long, secondId: Long): ResearchPairStat
+    fun getCompetitionsForUserCsv(userId: Long): String
+    fun blank()
 }
 
 data class ResearchPairStat(

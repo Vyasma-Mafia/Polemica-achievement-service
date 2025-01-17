@@ -1,7 +1,9 @@
 package com.github.mafia.vyasma.polemicaachivementservice.research
 
+import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.MetricsUtils
 import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
 import com.github.mafia.vyasma.polemica.library.utils.getRole
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
@@ -11,14 +13,24 @@ import com.github.mafia.vyasma.polemica.library.utils.isRedWin
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.util.function.Predicate
 
 @Service
+
 class ResearchServiceImpl(
     val gameRepository: GameRepository,
-    private val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val polemicaClient: PolemicaClient
 ) : ResearchService {
+    val logger = LoggerFactory.getLogger(ResearchServiceImpl::class.java)
+
+    override fun blank() {
+        return
+    }
+
     override fun getGamesWhereFourRedVotesByPerson(): ResearchVotedByFourRedVotesAnswer {
         var toRed = 0L
         var toBlack = 0L
@@ -175,8 +187,37 @@ class ResearchServiceImpl(
         )
     }
 
-    private fun getPolemicaUser(userId: Long): PolemicaUser? {
+    fun getCompetitionsForUser(userId: Long): List<Pair<PolemicaClient.PolemicaCompetition, List<PolemicaUser>>> {
+        return polemicaClient.getCompetitions().filter { it.city == "Санкт-Петербург" }
+            // .filter { polemicaClient.getCompetitionMembers(it.id).any { it.player.id == userId } }
+            .map { Pair(it, MetricsUtils.getRating(polemicaClient.getCompetitionResultMetrics(it.id, it.scoringType))) }
+            .filter { it.second.any { it.id == userId } }
+    }
+
+    override fun getCompetitionsForUserCsv(userId: Long): String {
+        return getCompetitionsForUser(userId).map {
+            "${it.first.name},${it.second.size - it.second.indexOfFirst { it.id == userId }}/${it.second.size}"
+        }.joinToString("\n") { it }
+    }
+
+    fun getPolemicaUser(userId: Long): PolemicaUser? {
         return userRepository.findByIdOrNull(userId)?.let { PolemicaUser(it.userId, it.username) }
+    }
+
+    fun getRedWinRateForFilter(p: Predicate<Game>): TeamWinRate {
+        var redWin = 0L
+        var blackWin = 0L
+        gameRepository.findAll().forEach { game ->
+            if (p.test(game)) {
+                logger.info("Game ${game.gameId}, ${game.gamePlace} is in filter")
+                if (game.data.isRedWin()) {
+                    redWin += 1
+                } else {
+                    blackWin += 1
+                }
+            }
+        }
+        return TeamWinRate(redWin, blackWin)
     }
 
     data class ResearchPairStatCounter(
@@ -189,4 +230,6 @@ class ResearchServiceImpl(
         var firstBlackSecondBlackWin: Long = 0,
         var firstBlackSecondBlackTotal: Long = 0
     )
+
+    data class TeamWinRate(val redWin: Long, val blackWin: Long)
 }
