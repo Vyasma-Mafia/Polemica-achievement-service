@@ -1,7 +1,10 @@
 package com.github.mafia.vyasma.polemicaachivementservice.research
 
 import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaPlayer
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
+import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.MetricsUtils
 import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
@@ -19,7 +22,6 @@ import org.springframework.stereotype.Service
 import java.util.function.Predicate
 
 @Service
-
 class ResearchServiceImpl(
     val gameRepository: GameRepository,
     val userRepository: UserRepository,
@@ -43,7 +45,7 @@ class ResearchServiceImpl(
                     .filter { it.value.size == 9 }
                     .filter { votes -> votes.value.all { it.convicted.size == 1 } }
                 if (ninesVotes.isNotEmpty()) {
-                    val groupedByConvicted = ninesVotes
+                    ninesVotes
                         .mapValues { votes -> votes.value.groupBy { it.convicted.first() } }
                         .toList()
                         .map { it.second }
@@ -217,7 +219,50 @@ class ResearchServiceImpl(
                 }
             }
         }
+
+
         return TeamWinRate(redWin, blackWin)
+    }
+
+    fun countGamesByFilter(p: (PolemicaGame) -> Boolean = { true }): Int {
+        return gameRepository.findAll().map { it.data }.count(p)
+    }
+
+    fun getStatByPosition(p: (PolemicaPlayer) -> Boolean = { true }): List<Pair<Position, SimpleStat>> {
+        val positionSimpleStats = mutableMapOf<Position, SimpleStat>()
+        Position.entries.forEach { position ->
+            positionSimpleStats[position] = SimpleStat()
+        }
+        gameRepository.findAll().forEach { game ->
+            game.data.players.filter(p).forEach { player ->
+                positionSimpleStats[player.position]?.let { stat ->
+                    stat.red += if (player.role.isRed()) 1 else 0
+                    stat.black += if (player.role.isBlack()) 1 else 0
+                    stat.redWin += if (game.data.isRedWin() && player.role.isRed()) 1 else 0
+                    stat.blackWin += if (game.data.isBlackWin() && player.role.isBlack()) 1 else 0
+                }
+            }
+        }
+        return positionSimpleStats.entries.map { it.key to it.value }
+    }
+
+    data class SimpleStat(
+        var red: Long = 0,
+        var black: Long = 0,
+        var redWin: Long = 0,
+        var blackWin: Long = 0
+    ) {
+        fun winRate(): Double {
+            return (redWin.toDouble() + blackWin) / (red + black)
+        }
+
+        fun redWinRate(): Double {
+            return redWin.toDouble() / red
+        }
+
+        fun blackWinRate(): Double {
+            return blackWin.toDouble() / black
+        }
     }
 
     data class ResearchPairStatCounter(
