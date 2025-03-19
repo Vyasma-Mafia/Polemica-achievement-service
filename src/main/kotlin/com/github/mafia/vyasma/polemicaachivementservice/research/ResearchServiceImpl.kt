@@ -224,6 +224,13 @@ class ResearchServiceImpl(
         return TeamWinRate(redWin, blackWin)
     }
 
+    fun getGamesForPerson(personId: Long, p: (PolemicaPlayer) -> Boolean = { true }): List<Game> {
+        return gameRepository.findAll()
+            .filter { it.data.players.any { it.player == personId } }
+            .filter { p(it.data.players.first { it.player == personId }) }
+            .map { it }
+    }
+
     fun countGamesByFilter(p: (PolemicaGame) -> Boolean = { true }): Int {
         return gameRepository.findAll().map { it.data }.count(p)
     }
