@@ -15,7 +15,7 @@ object PartialMafsGuessAchievement : Achievement {
     override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Position): Int {
         val lastWordMafs =
-            game.players.find { it.position == position }?.guess?.mafs?.map { game.getRole(it) }
+            game.players?.find { it.position == position }?.guess?.mafs?.map { game.getRole(it) }
         return boolToInt(lastWordMafs?.filter { it.isBlack() }?.size == 2)
     }
 }

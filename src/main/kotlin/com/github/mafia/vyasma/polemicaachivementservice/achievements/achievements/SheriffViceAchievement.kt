@@ -16,7 +16,7 @@ object SheriffViceAchievement : Achievement {
     override val levels = listOf(1, 2, 5, 12, 30)
     override fun check(game: PolemicaGame, position: Position): Int {
         val lastWordVice =
-            game.players.find { it.position == position }?.guess?.vice
+            game.players?.find { it.position == position }?.guess?.vice
         return boolToInt(lastWordVice?.let { game.getRole(it) } == Role.SHERIFF
             && game.getRole(position).isRed()
         )

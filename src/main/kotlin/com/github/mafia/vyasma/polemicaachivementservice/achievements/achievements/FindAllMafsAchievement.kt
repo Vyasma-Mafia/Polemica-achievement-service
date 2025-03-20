@@ -20,12 +20,12 @@ object FindAllMafsAchievement : Achievement {
             return 0
         }
         return boolToInt(
-            game.checks.filter { it.role == Role.SHERIFF && it.night <= 3 }
-                .map { it.player }
-                .toSet()
-                .map { game.getRole(it) }
-                .filter { it.isBlack() }
-                .size == 3
+            game.checks?.filter { it.role == Role.SHERIFF && it.night <= 3 }
+                ?.map { it.player }
+                ?.toSet()
+                ?.map { game.getRole(it) }
+                ?.filter { it.isBlack() }
+                ?.size == 3
         )
     }
 }

@@ -155,7 +155,7 @@ class AchievementServiceImpl(
         game: Game,
         achievement: Achievement
     ): List<AchievementService.AchievementGames.GamePostpositionForAchievement> =
-        game.data.players.flatMap { player ->
+        game.data.players?.flatMap { player ->
             val checkResult = achievement.check(game.data, player.position)
             if (checkResult != 0) {
                 return@flatMap listOf(
@@ -169,7 +169,7 @@ class AchievementServiceImpl(
             } else {
                 emptyList()
             }
-        }
+        } ?: emptyList()
 
     override fun getTopAchievementUsers(
         userIds: List<Long>,

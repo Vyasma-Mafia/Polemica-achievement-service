@@ -17,7 +17,10 @@ object FindSheriffAchievement : Achievement {
         if (position.role() != Role.DON) {
             return 0
         }
-        return boolToInt(game.checks.any { it.role == Role.DON && it.night == 1 && it.player.role() == Role.SHERIFF })
+        return boolToInt(game.checks
+            ?.any { it.role == Role.DON && it.night == 1 && it.player.role() == Role.SHERIFF }
+            ?: false
+        )
     }
 }
 
