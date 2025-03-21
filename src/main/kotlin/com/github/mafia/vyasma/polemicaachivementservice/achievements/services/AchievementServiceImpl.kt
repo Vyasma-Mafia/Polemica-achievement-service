@@ -7,6 +7,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievemen
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FirstKickedFullGuessAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FoulsForWinOnCriticAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.FullMafsAchievement
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.ManyVicesAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.PartialMafsGuessAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SamuraiPathAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.SheriffLiveAchievement
@@ -66,7 +67,8 @@ class AchievementServiceImpl(
         SheriffLiveAchievement,
         VotingOnlyForBlackAchievement,
         WinWithoutCriticAchievement,
-        FoulsForWinOnCriticAchievement
+        FoulsForWinOnCriticAchievement,
+        ManyVicesAchievement
     )
 
     private val achievementsMap = achievements.associateBy { it.id }
