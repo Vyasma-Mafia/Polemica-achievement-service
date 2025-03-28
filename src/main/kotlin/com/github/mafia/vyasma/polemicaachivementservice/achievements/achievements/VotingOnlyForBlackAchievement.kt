@@ -17,7 +17,7 @@ object VotingOnlyForBlackAchievement : Achievement {
     override val levels = listOf(1, 3, 7, 20, 50)
     override fun check(game: PolemicaGame, position: Position): Int = game.check {
         assert { position.role() == Role.PEACE }
-        val votes = game.getFinalVotes()
+        val votes = game.getFinalVotes(null)
         return boolToInt(
             votes.filter { it.position == position }
                 .all { candidates -> candidates.convicted.any { it.role().isBlack() } }

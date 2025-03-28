@@ -17,7 +17,7 @@ object VoteForBlackAchievement : Achievement {
     override val category = AchievementCategory.RED
     override val levels = listOf(1, 5, 25, 100, 500)
     override fun check(game: PolemicaGame, position: Position): Int = if (game.getRole(position).isRed()) {
-        game.getFinalVotes()
+        game.getFinalVotes(null)
             .filter { it.position == position }
             .sumOf { finalVote -> finalVote.convicted.map { game.getRole(it) }.filter { it.isBlack() }.size }
     } else {

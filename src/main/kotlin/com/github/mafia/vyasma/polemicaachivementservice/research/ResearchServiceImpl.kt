@@ -40,7 +40,7 @@ class ResearchServiceImpl(
         gameRepository.findAll()
             .forEach { game ->
                 val data = game.data
-                val ninesVotes = data.getFinalVotes()
+                val ninesVotes = data.getFinalVotes(null)
                     .groupBy { it.day }
                     .filter { it.value.size == 9 }
                     .filter { votes -> votes.value.all { it.convicted.size == 1 } }
