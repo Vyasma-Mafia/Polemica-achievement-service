@@ -6,9 +6,10 @@ app:
     enable: true
     interval: 1h
   crawlClubs:
-    - 289
-    - 72
-    - 182
+    - 289 # ЧХ
+    - 72 # Polemica Spb
+    - 182 # ВП
+    - 313 # Fox
   achievement-check-game-started-after: 2024-09-26T00:00:00
 
 spring:
