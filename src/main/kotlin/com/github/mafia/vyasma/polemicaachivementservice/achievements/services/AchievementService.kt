@@ -1,43 +1,47 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.services
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
-import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievement
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
+import java.time.LocalDateTime
 
 interface AchievementService {
+    // Существующие методы
     fun checkAchievements()
     fun recheckAchievements()
-    fun getAchievements(gainsUsernames: List<String>, ids: List<Long>): AchievementsWithGains
     fun getAchievementsGames(achievementId: String, gameId: Long?): AchievementGames
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    data class AchievementGames(
-        val games: List<GamePostpositionForAchievement>
-    ) {
-        data class GamePostpositionForAchievement(
-            val gameId: Long,
-            val gamePlace: PolemicaGamePlace?,
-            val position: Position,
-            val checkResult: Int
-        )
-    }
+    // Обновленные методы с параметром даты
+    fun getAchievements(
+        gainsUsernames: List<String>,
+        ids: List<Long>,
+        startDate: LocalDateTime?
+    ): AchievementsWithGains
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    data class AchievementsWithGains(
-        val achievements: List<Achievement>,
-        val achievementsGains: List<AchievementGainAnswer>
-    )
+    fun getTopAchievementUsers(
+        userIds: List<Long>,
+        rankLimit: Int,
+        startDate: LocalDateTime?
+    ): AchievementsWithGains
 
+    // Существующие классы и интерфейсы...
+    data class AchievementsWithGains(val achievements: List<Achievement>, val gains: List<AchievementGainAnswer>)
     data class AchievementGainAnswer(
         val user: PolemicaUser,
         val achievementId: String,
-        val achievementLevel: Int,
-        val achievementCounter: Long?
+        val achievementCounter: Long?,
+        val achievementLevel: Int
     )
 
-    fun getTopAchievementUsers(userIds: List<Long>, rankLimit: Int): AchievementsWithGains
+    data class AchievementGames(val games: List<GamePostpositionForAchievement>) {
+        data class GamePostpositionForAchievement(
+            val gameId: Long,
+            val gamePlace: PolemicaGamePlace,
+            val position: Int,
+            val count: Int
+        )
+    }
 }
+
 
 

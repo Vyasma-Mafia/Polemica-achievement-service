@@ -24,11 +24,10 @@ import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievemen
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinThreeToThreeLastAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithSelfKillAchievement
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements.WinWithoutCriticAchievement
-import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameUserRepository
-import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementUsersRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementSummaryProjection
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -39,7 +38,6 @@ import java.time.LocalDateTime
 @EnableTransactionManagement
 class AchievementServiceImpl(
     val gameRepository: GameRepository,
-    val achievementUsersRepository: AchievementUsersRepository,
     val achievementTransactionalService: AchievementTransactionalService,
     val achievementCheckGameStartedAfter: LocalDateTime,
     private val achievementGameRepository: AchievementGameRepository,
@@ -87,29 +85,39 @@ class AchievementServiceImpl(
         logger.info("Start deleting gotten achievements")
         achievementGameUserRepository.deleteAll()
         achievementGameRepository.deleteAll()
-        achievementUsersRepository.deleteAll()
         logger.info("End deleting gotten achievements")
         checkAchievements()
     }
 
-
+    // Обновленный метод с поддержкой фильтрации по дате
     override fun getAchievements(
         gainsUsernames: List<String>,
-        ids: List<Long>
+        ids: List<Long>,
+        startDate: LocalDateTime?
     ): AchievementService.AchievementsWithGains {
-        return AchievementService.AchievementsWithGains(
-            achievements,
-            build(achievementUsersRepository.findAllByUserUsernameInOrUserUserIdIn(gainsUsernames, ids))
-        )
+        // Используем новый метод из репозитория
+        val achievementSummaries = achievementGameUserRepository
+            .findAchievementSummaryByUsernamesOrUserIdsAndAfterDate(
+                gainsUsernames,
+                ids,
+                startDate ?: achievementCheckGameStartedAfter // Используем default дату если не указано
+            )
+
+        val gains = buildFromProjections(achievementSummaries)
+
+        return AchievementService.AchievementsWithGains(achievements, gains)
     }
 
-    private fun build(achievementUsers: List<AchievementUser>): List<AchievementService.AchievementGainAnswer> {
-        return achievementUsers.map {
+    // Новый метод для создания ответов из проекций базы данных
+    private fun buildFromProjections(
+        projections: List<AchievementSummaryProjection>
+    ): List<AchievementService.AchievementGainAnswer> {
+        return projections.map { projection ->
             AchievementService.AchievementGainAnswer(
-                user = PolemicaUser(it.user.userId, it.user.username),
-                achievementId = it.achievement,
-                achievementCounter = it.achievementCounter,
-                achievementLevel = getAchievementLevel(it.achievement, it.achievementCounter)
+                user = PolemicaUser(projection.getUserId(), projection.getUsername()),
+                achievementId = projection.getAchievementId(),
+                achievementCounter = projection.getCounter(),
+                achievementLevel = getAchievementLevel(projection.getAchievementId(), projection.getCounter())
             )
         }.sortedBy { achievementsMap[it.achievementId]?.order }
     }
@@ -128,10 +136,10 @@ class AchievementServiceImpl(
     }
 
     fun processAchievement(achievement: Achievement) {
-        gameRepository.findAllWhereNotAchievementStartedAfterDate(achievement.id, achievementCheckGameStartedAfter)
+        gameRepository.findAllWhereNotAchievement(achievement.id)
             .forEach { game ->
-            achievementTransactionalService.processAchievementForGame(achievement, game)
-        }
+                achievementTransactionalService.processAchievementForGame(achievement, game)
+            }
     }
 
     fun saveUsers() {
@@ -164,7 +172,7 @@ class AchievementServiceImpl(
                     AchievementService.AchievementGames.GamePostpositionForAchievement(
                         game.gameId,
                         game.gamePlace,
-                        player.position,
+                        player.position.value,
                         checkResult
                     )
                 )
@@ -173,18 +181,22 @@ class AchievementServiceImpl(
             }
         } ?: emptyList()
 
+    // Обновленный метод с поддержкой фильтрации по дате
     override fun getTopAchievementUsers(
         userIds: List<Long>,
-        rankLimit: Int
+        rankLimit: Int,
+        startDate: LocalDateTime?
     ): AchievementService.AchievementsWithGains {
-        return AchievementService.AchievementsWithGains(
-            achievements,
-            build(
-                achievementUsersRepository.findTopByAchievementCounterForEveryAchievementWhereUserIdIn(
-                    userIds,
-                    rankLimit
-                )
+        // Используем новый метод из репозитория
+        val topAchievements = achievementGameUserRepository
+            .findTopAchievementSummaryByUserIdsAndAfterDate(
+                userIds,
+                startDate ?: achievementCheckGameStartedAfter,
+                rankLimit
             )
-        )
+
+        val gains = buildFromProjections(topAchievements)
+
+        return AchievementService.AchievementsWithGains(achievements, gains)
     }
 }

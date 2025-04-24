@@ -19,4 +19,8 @@
     <changeSet id="remove_username_unique" author="chulkov-alex">
         <sqlFile path="sql/remove_username_unique.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="delete_achievement_users_table" author="chulkov-alex">
+        <sqlFile path="sql/delete_achievement_users_table.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>

@@ -4,12 +4,10 @@ import com.github.mafia.vyasma.polemicaachivementservice.achievements.Achievemen
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementGameUserKey
-import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.AchievementUser
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.User
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementGameUserRepository
-import com.github.mafia.vyasma.polemicaachivementservice.repositories.AchievementUsersRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
 import jakarta.transaction.Transactional
@@ -22,7 +20,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 class AchievementTransactionalServiceImpl(
     val gameRepository: GameRepository,
     val userRepository: UserRepository,
-    val achievementUsersRepository: AchievementUsersRepository,
     val achievementGameRepository: AchievementGameRepository,
     val achievementGameUserRepository: AchievementGameUserRepository
 ) : AchievementTransactionalService {
@@ -48,19 +45,6 @@ class AchievementTransactionalServiceImpl(
                     checkResult.toLong()
                 )
             )
-            val achievementGain = achievementUsersRepository.findOneByAchievementAndUserIs(achievement.id, user)
-            if (achievementGain != null) {
-                achievementGain.achievementCounter = achievementGain.achievementCounter?.plus(checkResult)
-                achievementUsersRepository.save(achievementGain)
-            } else {
-                achievementUsersRepository.save(
-                    AchievementUser(
-                        achievement = achievement.id,
-                        user = user,
-                        achievementCounter = checkResult.toLong()
-                    )
-                )
-            }
         }
     }
 
