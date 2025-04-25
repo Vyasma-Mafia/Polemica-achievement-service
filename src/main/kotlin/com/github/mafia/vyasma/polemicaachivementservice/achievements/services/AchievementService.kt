@@ -24,8 +24,10 @@ interface AchievementService {
         startDate: LocalDateTime?
     ): AchievementsWithGains
 
-    // Существующие классы и интерфейсы...
-    data class AchievementsWithGains(val achievements: List<Achievement>, val gains: List<AchievementGainAnswer>)
+    data class AchievementsWithGains(
+        val achievements: List<Achievement>,
+        val achievementsGains: List<AchievementGainAnswer>
+    )
     data class AchievementGainAnswer(
         val user: PolemicaUser,
         val achievementId: String,
