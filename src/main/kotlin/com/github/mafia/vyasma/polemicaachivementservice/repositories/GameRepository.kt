@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository
 interface GameRepository : JpaRepository<Game, Long> {
     fun findAllWhereByProcessedVersionIs(processedVersion: Long): List<Game>
     fun findAllWhereByGamePlace_ClubId(clubId: Long): List<Game>
+    fun findByPointsIsNullOrderByGameId(): List<Game>
 
     @Query(
         """

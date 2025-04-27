@@ -4,6 +4,7 @@ import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
+import com.github.mafia.vyasma.polemicaachivementservice.rating.RatingService
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -14,8 +15,9 @@ private const val GET_LIMIT = 100L
 class CrawlerServiceImpl(
     val polemicaClient: PolemicaClient,
     val gameRepository: GameRepository,
-    val crawlClubs: List<Long>,
-    val achievementService: AchievementService
+    val crawlClubs: MutableList<Long>,
+    val achievementService: AchievementService,
+    val ratingService: RatingService
 ) : CrawlerService {
     private val logger = LoggerFactory.getLogger(CrawlerServiceImpl::class.java.name)
 
@@ -23,6 +25,7 @@ class CrawlerServiceImpl(
         crawlClubs.forEach { crawlClub(it, withStopOnDb) }
         crawlCompetitions(withStopOnDb)
         achievementService.checkAchievements()
+        ratingService.crawlGames()
     }
 
     override fun reparseGames(fullDelete: Boolean) {

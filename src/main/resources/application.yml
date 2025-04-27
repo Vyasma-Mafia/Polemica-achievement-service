@@ -12,6 +12,7 @@ app:
     - 313 # Fox
   achievement-check-game-started-after: 2024-09-26T00:00:00
 
+
 spring:
   application:
     name: polemica-achievement-service
@@ -29,8 +30,13 @@ spring:
       ddl-auto: validate
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
   jackson:
     default-property-inclusion: non_null
+
 
 server:
   port: 8080
@@ -57,3 +63,4 @@ management:
     port: 8081
   enable:
     http.server.requests: true
+

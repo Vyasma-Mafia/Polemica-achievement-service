@@ -23,4 +23,17 @@
     <changeSet id="delete_achievement_users_table" author="chulkov-alex">
         <sqlFile path="sql/delete_achievement_users_table.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="add_points_column" author="chulkov-alex">
+        <sqlFile path="sql/add_points_column.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="add_recalibration_history" author="chulkov-alex">
+        <sqlFile path="sql/add_recalibration_history.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+
+    <changeSet id="add_competitive_to_rating" author="chulkov-alex">
+        <sqlFile path="sql/add_competitive_to_rating.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>

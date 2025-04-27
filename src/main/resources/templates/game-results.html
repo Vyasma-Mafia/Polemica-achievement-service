@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title th:text="'Игра #' + ${game.gameId} + ' - Результаты'">Результаты игры</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .badge-mafia {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-civilian {
+            background-color: #198754;
+            color: white;
+        }
+
+        .badge-sheriff {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .badge-don {
+            background-color: #6f42c1;
+            color: white;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 30px 0;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .rating-up {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .rating-down {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .rating-neutral {
+            color: #6c757d;
+        }
+
+        .team-section {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mafia-section {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 5px solid #dc3545;
+        }
+
+        .civilian-section {
+            background-color: rgba(25, 135, 84, 0.1);
+            border-left: 5px solid #198754;
+        }
+
+        .best-player {
+            border: 2px solid gold;
+            position: relative;
+        }
+
+        .best-player::after {
+            content: '⭐';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 24px;
+        }
+
+        .game-card {
+            transition: transform 0.2s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<!-- Шапка игры -->
+<div class="game-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1>
+                        <span class="badge bg-warning text-dark me-2" th:if="${gameStats.competitive}">
+                            <i class="bi bi-trophy"></i> Турнир
+                        </span>
+                    Игра #<span th:text="${game.gameId}">12345</span>
+                </h1>
+                <p class="lead mb-0">
+                    <span th:text="${#temporals.format(gameStats.gameDate, 'dd.MM.yyyy HH:mm')}">01.01.2023 15:30</span>
+                    — Победа команды <span th:class="${gameStats.winnerTeam == 'Мафия' ? 'text-danger' : 'text-success'}"
+                        th:text="${gameStats.winnerTeam}">Мирные</span>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="btn-group">
+                    <a class="btn btn-outline-light" href="/games">
+                        <i class="bi bi-list"></i> Все игры
+                    </a>
+                    <a class="btn btn-outline-light" th:href="@{'https://polemicagame.com/match/' + ${game.gameId}}">
+                        <i class="bi bi-journal-text"></i> Лог игры
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Краткая статистика игры -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card game-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-1 text-primary mb-2"></i>
+                    <h5 class="card-title">Игроков</h5>
+                    <div class="display-6" th:text="${gameStats.totalPlayers}">10</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card game-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-trophy fs-1 text-warning mb-2"></i>
+                    <h5 class="card-title">Победа</h5>
+                    <div class="display-6" th:class="${gameStats.winnerTeam == 'Мафия' ? 'text-danger' : 'text-success'}"
+                            th:text="${gameStats.winnerTeam}">Мирные
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card game-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-star fs-1 text-warning mb-2"></i>
+                    <h5 class="card-title">Лучший игрок</h5>
+                    <div class="display-6">
+                        <a th:href="@{'/rating/player/' + ${bestPlayer.player.userId}}"
+                                th:text="${bestPlayer.player.username}">Player</a>
+                    </div>
+                    <div class="text-muted"
+                            th:text="${#numbers.formatDecimal(bestPlayer.pointsEarned, 1, 1) + ' очков'}">1.5 очков
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card game-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-1 text-info mb-2"></i>
+                    <h5 class="card-title">Среднее изменение</h5>
+                    <div class="display-6" th:text="${#numbers.formatDecimal(gameStats.avgRatingChange, 1, 1)}">+2.5
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Команда мафии -->
+    <div class="team-section mafia-section mb-4">
+        <h3 class="mb-3">
+            <i class="bi bi-diamond-fill text-danger me-2"></i>
+            Команда мафии
+            <span class="badge bg-danger ms-2" th:if="${gameStats.winnerTeam == 'Мафия'}">Победа</span>
+        </h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Игрок</th>
+                    <th>Роль</th>
+                    <th>Очки</th>
+                    <th>Рейтинг до</th>
+                    <th>Изменение</th>
+                    <th>Рейтинг после</th>
+                    <th>Вес</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:class="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${mafiaTeam}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="player-avatar me-2">
+                                <span th:text="${#strings.substring(player.player.username, 0, 1).toUpperCase()}">A</span>
+                            </div>
+                            <a th:href="@{'/rating/player/' + ${player.player.userId}}"
+                                    th:text="${player.player.username}">Username</a>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-mafia">Мафия</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(player.pointsEarned, 1, 1)}">1.0</td>
+                    <td th:text="${#numbers.formatDecimal(player.oldMu - 3 * player.oldSigma, 1, 0)}">1000</td>
+                    <td>
+                                <span class="rating-up" th:if="${player.muDelta > 0}">
+                                    <i class="bi bi-arrow-up-short"></i>
+                                    <span th:text="${'+' + #numbers.formatDecimal(player.muDelta, 1, 1)}">+5.5</span>
+                                </span>
+                        <span class="rating-down" th:if="${player.muDelta < 0}">
+                                    <i class="bi bi-arrow-down-short"></i>
+                                    <span th:text="${#numbers.formatDecimal(player.muDelta, 1, 1)}">-3.2</span>
+                                </span>
+                        <span class="rating-neutral" th:if="${player.muDelta == 0}">0</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(player.newMu - 3 * player.newSigma, 1, 0)}">1050</td>
+                    <td th:text="${#numbers.formatDecimal(player.weight, 1, 2)}">1.25</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Команда мирных -->
+    <div class="team-section civilian-section">
+        <h3 class="mb-3">
+            <i class="bi bi-people-fill text-success me-2"></i>
+            Команда мирных
+            <span class="badge bg-success ms-2" th:if="${gameStats.winnerTeam == 'Мирные'}">Победа</span>
+        </h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Игрок</th>
+                    <th>Роль</th>
+                    <th>Очки</th>
+                    <th>Рейтинг до</th>
+                    <th>Изменение</th>
+                    <th>Рейтинг после</th>
+                    <th>Вес</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:class="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${civilianTeam}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="player-avatar me-2">
+                                <span th:text="${#strings.substring(player.player.username, 0, 1).toUpperCase()}">A</span>
+                            </div>
+                            <a th:href="@{'/rating/player/' + ${player.player.userId}}"
+                                    th:text="${player.player.username}">Username</a>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-civilian">Мирный</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(player.pointsEarned, 1, 1)}">1.0</td>
+                    <td th:text="${#numbers.formatDecimal(player.oldMu - 3 * player.oldSigma, 1, 0)}">1000</td>
+                    <td>
+                                <span class="rating-up" th:if="${player.muDelta > 0}">
+                                    <i class="bi bi-arrow-up-short"></i>
+                                    <span th:text="${'+' + #numbers.formatDecimal(player.muDelta, 1, 1)}">+5.5</span>
+                                </span>
+                        <span class="rating-down" th:if="${player.muDelta < 0}">
+                                    <i class="bi bi-arrow-down-short"></i>
+                                    <span th:text="${#numbers.formatDecimal(player.muDelta, 1, 1)}">-3.2</span>
+                                </span>
+                        <span class="rating-neutral" th:if="${player.muDelta == 0}">0</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(player.newMu - 3 * player.newSigma, 1, 0)}">1050</td>
+                    <td th:text="${#numbers.formatDecimal(player.weight, 1, 2)}">1.25</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Рекалибровки в игре, если были -->
+    <div class="mt-5" th:if="${recalibrations != null && !recalibrations.isEmpty()}">
+        <h3 class="mb-3">Рекалибровки в этой игре</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Игрок</th>
+                    <th>Старая σ</th>
+                    <th>Новая σ</th>
+                    <th>Изменение</th>
+                    <th>Причина</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="recal : ${recalibrations}">
+                    <td>
+                        <a th:href="@{'/rating/player/' + ${recal.player.userId}}" th:text="${recal.player.username}">Username</a>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(recal.oldSigma, 1, 2)}">5.00</td>
+                    <td th:text="${#numbers.formatDecimal(recal.newSigma, 1, 2)}">6.50</td>
+                    <td th:text="${'+' + #numbers.formatDecimal(recal.newSigma - recal.oldSigma, 1, 2)}">+1.50</td>
+                    <td th:text="${recal.reason}">Threshold recalibration</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Мафия &mdash; Рейтинговая система</h5>
+                <p class="text-muted">Система рейтинга OpenSkill для игры Мафия</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0 text-muted">&copy; 2023 Все права защищены</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

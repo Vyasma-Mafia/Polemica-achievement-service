@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Рейтинг игроков - Мафия</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .rating-card {
+            transition: transform 0.2s;
+        }
+
+        .rating-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .top-players {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+        }
+
+        .table th {
+            cursor: pointer;
+        }
+
+        #ratingChart {
+            height: 250px;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <h1 class="mb-4">Рейтинг игроков</h1>
+
+    <!-- Карточки с общей статистикой -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-3">
+            <div class="card rating-card h-100 top-players">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Лидер</h3>
+                    <h4 th:text="${topPlayer != null ? topPlayer.username : 'Нет данных'}">UserName</h4>
+                    <div class="display-4 fw-bold"
+                            th:text="${topPlayer != null ? #numbers.formatDecimal(topPlayer.rating ?: 0, 1, 0) : 'N/A'}">
+                        1500
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card rating-card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Всего игроков</h5>
+                    <div class="display-4 fw-bold" th:text="${totalPlayers}">250</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card rating-card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Всего игр</h5>
+                    <div class="display-4 fw-bold" th:text="${totalGames}">1200</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card rating-card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Средний рейтинг</h5>
+                    <div class="display-4 fw-bold" th:text="${#numbers.formatDecimal(averageRating, 1, 0)}">1000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры и поиск -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form action="/rating" class="mb-0" method="get">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input aria-label="Поиск" class="form-control" id="searchInput" name="search"
+                            placeholder="Поиск по имени..." th:value="${param.search}"
+                            type="text">
+                    <button class="btn btn-primary" type="submit">Найти</button>
+                    <a class="btn btn-outline-secondary" href="/rating" th:if="${param.search}">
+                        Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <div class="mt-2 mt-md-0">
+                <span class="text-muted">Всего: <span th:text="${totalElements}">100</span> игроков</span>
+                <span class="ms-3 text-muted" th:if="${param.search}">
+                Найдено: <span th:text="${players.size()}">10</span>
+            </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Таблица рейтинга -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="ratingTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Игрок</th>
+                        <th scope="col">Рейтинг</th>
+                        <th scope="col">Игр</th>
+                        <th scope="col">Побед %</th>
+                        <!--                        <th scope="col">μ</th>-->
+                        <!--                        <th scope="col">σ</th>-->
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player, iterStat : ${players}">
+                        <td class="text-muted" th:text="${iterStat.count + currentPage * 20}">1</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <!-- Вместо изображения используем первую букву имени -->
+                                <div class="rounded-circle bg-secondary me-2 text-white d-flex align-items-center justify-content-center"
+                                        style="width: 32px; height: 32px;">
+                                    <span th:text="${#strings.substring(player.username, 0, 1).toUpperCase()}">U</span>
+                                </div>
+                                <span th:text="${player.username}">Username</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-bold"
+                                    th:text="${#numbers.formatDecimal(player.rating ?: 0, 1, 0)}">1250</span>
+                        </td>
+                        <td th:text="${player.gamesPlayed}">42</td>
+                        <td>
+                            <!-- Рассчитываем процент побед из имеющихся данных -->
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success"
+                                            th:style="'width: ' + ${player.gamesPlayed > 0 ? player.gamesWon * 100 / player.gamesPlayed : 0} + '%'"></div>
+                                </div>
+                                <span th:text="${player.gamesPlayed > 0 ? #numbers.formatDecimal(player.gamesWon * 100.0 / player.gamesPlayed, 1, 1) + '%' : '0.0%'}">65.5%</span>
+                            </div>
+                        </td>
+                        <!--                        <td th:text="${#numbers.formatDecimal(player.mu, 1, 2)}">25.00</td>-->
+                        <!--                        <td th:text="${#numbers.formatDecimal(player.sigma, 1, 2)}">8.33</td>-->
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{'/rating/player/' + ${player.userId}}">
+                                Профиль
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Улучшенная пагинация для большого количества страниц -->
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <!-- Кнопка "Первая" -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a aria-label="First" class="page-link" th:href="@{/rating(page=0, search=${param.search})}">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Кнопка "Предыдущая" -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a aria-label="Previous" class="page-link"
+                                th:href="@{/rating(page=${currentPage - 1}, search=${param.search})}">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Первая страница, если не в начале -->
+                    <li class="page-item" th:if="${currentPage > 3}">
+                        <a class="page-link" th:href="@{/rating(page=0, search=${param.search})}">1</a>
+                    </li>
+
+                    <!-- Многоточие, если нужно -->
+                    <li class="page-item disabled" th:if="${currentPage > 4}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Страницы вокруг текущей (по 2 с каждой стороны) -->
+                    <li class="page-item"
+                            th:classappend="${currentPage == i} ? 'active'"
+                            th:each="i : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 0,
+                                             currentPage + 2 < totalPages ? currentPage + 2 : totalPages - 1)}">
+                        <a class="page-link" th:href="@{/rating(page=${i}, search=${param.search})}" th:text="${i + 1}">1</a>
+                    </li>
+
+                    <!-- Многоточие, если нужно -->
+                    <li class="page-item disabled" th:if="${currentPage < totalPages - 5}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Последняя страница, если не в конце -->
+                    <li class="page-item" th:if="${currentPage < totalPages - 4}">
+                        <a class="page-link" th:href="@{/rating(page=${totalPages - 1}, search=${param.search})}"
+                                th:text="${totalPages}">100</a>
+                    </li>
+
+                    <!-- Кнопка "Следующая" -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a aria-label="Next" class="page-link"
+                                th:href="@{/rating(page=${currentPage + 1}, search=${param.search})}">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Кнопка "Последняя" -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a aria-label="Last" class="page-link"
+                                th:href="@{/rating(page=${totalPages - 1}, search=${param.search})}">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Мафия &mdash; Рейтинговая система</h5>
+                <p class="text-muted">Система рейтинга OpenSkill для игры Мафия</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0 text-muted">&copy; 2023 Все права защищены</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // График распределения рейтинга
+    const ctx = document.getElementById('ratingChart').getContext('2d');
+    const ratingData = /*[[${ratingDistribution}]]*/ [800, 900, 950, 1000, 1050, 1100, 1200];
+    const ratingLabels = /*[[${ratingLabels}]]*/ ['800-900', '900-950', '950-1000', '1000-1050', '1050-1100', '1100-1200', '>1200'];
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ratingLabels,
+            datasets: [{
+                label: 'Количество игроков',
+                data: ratingData,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Количество игроков'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Рейтинг'
+                    }
+                }
+            }
+        }
+    });
+
+    // Поиск в таблице
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#ratingTable tbody tr');
+
+        rows.forEach(row => {
+            const username = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            if (username.includes(value)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+</body>
+</html>

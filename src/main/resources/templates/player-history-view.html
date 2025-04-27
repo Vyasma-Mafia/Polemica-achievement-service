@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title th:text="${player.username} + ' - История рейтинга'">Player Name - История рейтинга</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .stat-card {
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-header {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 20px 0;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .history-row-win {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+
+        .history-row-loss {
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+
+        #ratingHistoryChart {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Шапка с информацией об игроке -->
+<div class="player-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 text-center text-md-start">
+                <!-- Аватар из первой буквы имени пользователя -->
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width: 120px; height: 120px;">
+                    <span class="display-4 text-primary"
+                            th:text="${#strings.substring(player.username, 0, 1).toUpperCase()}">U</span>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <h1 th:text="${player.username}">Username</h1>
+                <div class="d-flex flex-wrap gap-4 mt-3">
+                    <div>
+                        <h6 class="text-white-50">Рейтинг</h6>
+                        <h3 th:text="${#numbers.formatDecimal(player.rating ?: 0, 1, 0)}">1250</h3>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50">Всего игр</h6>
+                        <h3 th:text="${player.gamesPlayed}">150</h3>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50">Процент побед</h6>
+                        <h3 th:text="${player.gamesPlayed > 0 ? #numbers.formatDecimal(player.gamesWon * 100.0 / player.gamesPlayed, 1, 1) + '%' : '0.0%'}">
+                            65.5%</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- График истории рейтинга -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">История рейтинга</h5>
+            <div class="btn-group btn-group-sm">
+                <a class="btn btn-outline-secondary"
+                        th:classappend="${timeRange == 'all' ? 'active' : ''}"
+                        th:href="@{'/rating/player/' + ${player.userId}(timeRange='all')}">Всё время</a>
+                <a class="btn btn-outline-secondary"
+                        th:classappend="${timeRange == 'year' ? 'active' : ''}"
+                        th:href="@{'/rating/player/' + ${player.userId}(timeRange='year')}">Год</a>
+                <a class="btn btn-outline-secondary"
+                        th:classappend="${timeRange == 'month' ? 'active' : ''}"
+                        th:href="@{'/rating/player/' + ${player.userId}(timeRange='month')}">Месяц</a>
+                <a class="btn btn-outline-secondary"
+                        th:classappend="${timeRange == 'week' ? 'active' : ''}"
+                        th:href="@{'/rating/player/' + ${player.userId}(timeRange='week')}">Неделя</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="chartContainer" style="height: 300px">
+                <canvas id="ratingHistoryChart"></canvas>
+            </div>
+            <!-- Отображается, если данных для графика нет -->
+            <div class="text-center p-5 d-none" id="noDataMessage">
+                <i class="bi bi-exclamation-circle text-muted fs-1"></i>
+                <p class="mt-3 text-muted">Недостаточно данных для отображения графика.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Фильтры -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text">Поиск:</span>
+                <input class="form-control" id="searchHistoryInput" placeholder="Искать по дате..." type="text">
+            </div>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-success" id="filter-wins">Только победы</button>
+                <button class="btn btn-sm btn-outline-danger" id="filter-losses">Только поражения</button>
+                <button class="btn btn-sm btn-outline-primary active" id="filter-all">Все</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица истории изменения рейтинга -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="historyTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Игра</th>
+                        <th scope="col">Тип</th> <!-- Новый столбец -->
+                        <th scope="col">Очки</th>
+                        <th scope="col">Результат</th>
+                        <th scope="col">Старый рейтинг</th>
+                        <th scope="col">Изменение</th>
+                        <th scope="col">Новый рейтинг</th>
+                        <th scope="col">Вес</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:class="${history.isWin ? 'history-row-win' : 'history-row-loss'}"
+                            th:each="history : ${ratingHistory}">
+                        <td th:text="${#temporals.format(history.timestamp, 'dd.MM.yyyy HH:mm')}">01.01.2023 15:30</td>
+                        <td>
+                            <a th:href="@{'/rating/games/' + ${history.gameId}}"
+                                    th:text="${'#' + history.gameId}">Game #12345</a>
+                        </td>
+                        <td>
+                            <!-- Отображаем значок турнира для соответствующих игр -->
+                            <span class="badge bg-warning text-dark" th:if="${history.competitive}"
+                                    title="Турнирная игра">
+                                <i class="bi bi-trophy"></i> Турнир
+                            </span>
+                            <span class="badge bg-light text-dark" th:unless="${history.competitive}"
+                                    title="Обычная игра">
+                                Обычная
+                            </span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(history.pointsEarned, 1, 1)}">0.5</td>
+                        <td>
+                            <span class="badge bg-success" th:if="${history.isWin}">Победа</span>
+                            <span class="badge bg-danger" th:unless="${history.isWin}">Поражение</span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(history.oldMu - 3 * history.oldSigma, 1, 0)}">1200</td>
+                        <td>
+                                    <span class="text-success" th:if="${history.muDelta > 0}">
+                                        <i class="bi bi-arrow-up-short"></i>
+                                        <span th:text="${'+' + #numbers.formatDecimal(history.muDelta, 1, 1)}">+5.5</span>
+                                    </span>
+                            <span class="text-danger" th:if="${history.muDelta < 0}">
+                                        <i class="bi bi-arrow-down-short"></i>
+                                        <span th:text="${#numbers.formatDecimal(history.muDelta, 1, 1)}">-3.2</span>
+                                    </span>
+                            <span class="text-muted" th:if="${history.muDelta == 0}">0</span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(history.newMu - 3 * history.newSigma, 1, 0)}">1205</td>
+                        <td th:text="${#numbers.formatDecimal(history.weight, 1, 2)}">1.25</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Улучшенная пагинация для истории игрока -->
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <!-- Кнопка "Первая" -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a aria-label="First" class="page-link"
+                                th:href="@{'/rating/player/' + ${player.userId}(page=0)}">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Кнопка "Предыдущая" -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a aria-label="Previous" class="page-link"
+                                th:href="@{'/rating/player/' + ${player.userId}(page=${currentPage - 1})}">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Первая страница, если не в начале -->
+                    <li class="page-item" th:if="${currentPage > 3}">
+                        <a class="page-link" th:href="@{'/rating/player/' + ${player.userId}(page=0)}">1</a>
+                    </li>
+
+                    <!-- Многоточие, если нужно -->
+                    <li class="page-item disabled" th:if="${currentPage > 4}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Страницы вокруг текущей (по 2 с каждой стороны) -->
+                    <li class="page-item"
+                            th:classappend="${currentPage == i} ? 'active'"
+                            th:each="i : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 0,
+                                             currentPage + 2 < totalPages ? currentPage + 2 : totalPages - 1)}">
+                        <a class="page-link" th:href="@{'/rating/player/' + ${player.userId}(page=${i})}"
+                                th:text="${i + 1}">1</a>
+                    </li>
+
+                    <!-- Многоточие, если нужно -->
+                    <li class="page-item disabled" th:if="${currentPage < totalPages - 5}">
+                        <span class="page-link">...</span>
+                    </li>
+
+                    <!-- Последняя страница, если не в конце -->
+                    <li class="page-item" th:if="${currentPage < totalPages - 4}">
+                        <a class="page-link" th:href="@{'/rating/player/' + ${player.userId}(page=${totalPages - 1})}"
+                                th:text="${totalPages}">100</a>
+                    </li>
+
+                    <!-- Кнопка "Следующая" -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a aria-label="Next" class="page-link"
+                                th:href="@{'/rating/player/' + ${player.userId}(page=${currentPage + 1})}">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Кнопка "Последняя" -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a aria-label="Last" class="page-link"
+                                th:href="@{'/rating/player/' + ${player.userId}(page=${totalPages - 1})}">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Мафия &mdash; Рейтинговая система</h5>
+                <p class="text-muted">Система рейтинга OpenSkill для игры Мафия</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0 text-muted">&copy; 2023 Все права защищены</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Добавляем плагин аннотаций, который используется в настройках -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.0"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        // Получаем данные для графика
+        const timestamps = [[${ratingLabels}]];
+        const ratings = [[${ratingValues}]];
+        const points = [[${pointsValues}]];
+        const chartAnnotations = [[${chartAnnotations}]];
+
+        console.log('Timestamp data:', timestamps);
+        console.log('Ratings data:', ratings);
+        console.log('Points data:', points);
+
+        // Проверяем, есть ли данные для графика
+        if (!timestamps || timestamps.length === 0 || !ratings || ratings.length === 0) {
+            document.getElementById('chartContainer').classList.add('d-none');
+            document.getElementById('noDataMessage').classList.remove('d-none');
+            return;
+        }
+
+        // Получаем контекст канваса
+        const ctx = document.getElementById('ratingHistoryChart').getContext('2d');
+
+        // Вычисляем максимум и минимум для улучшения отображения
+        const maxRating = Math.max(...ratings) + 50;
+        const minRating = Math.min(...ratings) - 50;
+
+        // Создаем аннотации из полученных данных
+        const annotations = {};
+
+        if (chartAnnotations) {
+            for (const [key, value] of Object.entries(chartAnnotations)) {
+                annotations[key] = value;
+            }
+        }
+
+        // Создаем график
+        const ratingChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [
+                    {
+                        label: 'Рейтинг',
+                        data: ratings,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Очки за игру',
+                        data: points,
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        tension: 0,
+                        pointRadius: 4,
+                        pointStyle: 'circle',
+                        showLine: false, // Только точки, без линии
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Рейтинг'
+                        },
+                        suggestedMin: minRating,
+                        suggestedMax: maxRating
+                    },
+                    y1: {
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Очки за игру'
+                        },
+                        min: -0.5,
+                        max: 2,
+                        grid: {
+                            drawOnChartArea: false // Сетка только для оси рейтинга
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function (tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.datasetIndex === 0) {
+                                    label += Math.round(context.raw);
+                                } else {
+                                    label += context.raw.toFixed(1);
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top'
+                    },
+                    annotation: {
+                        annotations: annotations
+                    }
+                }
+            }
+        });
+    });
+</script>
+<script>
+    // Фильтрация таблицы по победам/поражениям
+    document.getElementById('filter-wins').addEventListener('click', function () {
+        const rows = document.querySelectorAll('#historyTable tbody tr');
+        rows.forEach(row => {
+            if (row.classList.contains('history-row-win')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        this.classList.add('active');
+        document.getElementById('filter-losses').classList.remove('active');
+        document.getElementById('filter-all').classList.remove('active');
+    });
+
+    document.getElementById('filter-losses').addEventListener('click', function () {
+        const rows = document.querySelectorAll('#historyTable tbody tr');
+        rows.forEach(row => {
+            if (row.classList.contains('history-row-loss')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        this.classList.add('active');
+        document.getElementById('filter-wins').classList.remove('active');
+        document.getElementById('filter-all').classList.remove('active');
+    });
+
+    document.getElementById('filter-all').addEventListener('click', function () {
+        const rows = document.querySelectorAll('#historyTable tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        this.classList.add('active');
+        document.getElementById('filter-wins').classList.remove('active');
+        document.getElementById('filter-losses').classList.remove('active');
+    });
+
+    // Поиск в таблице
+    document.getElementById('searchHistoryInput').addEventListener('input', function () {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#historyTable tbody tr');
+
+        rows.forEach(row => {
+            const date = row.querySelector('td:first-child').textContent.toLowerCase();
+            if (date.includes(value)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+</body>
+</html>

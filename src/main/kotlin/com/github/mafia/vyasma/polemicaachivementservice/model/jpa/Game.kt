@@ -1,6 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.model.jpa
 
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
+import com.github.mafia.vyasma.polemicaachivementservice.model.PolemicaGamePlayersPoints
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
@@ -24,6 +25,9 @@ data class Game(
 
     @JdbcTypeCode(SqlTypes.JSON)
     val data: PolemicaGame,
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    var points: PolemicaGamePlayersPoints? = null,
 
     @Embedded
     val gamePlace: PolemicaGamePlace,

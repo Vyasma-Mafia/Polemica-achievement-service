@@ -3,6 +3,7 @@ package com.github.mafia.vyasma.polemicaachivementservice.configurations
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -24,6 +25,9 @@ data class ApplicationConfig(
 
     @Bean
     fun achievementCheckGameStartedAfter() = achievementCheckGameStartedAfter
+
+    @Bean
+    fun restTemplate(): RestTemplate = RestTemplate()
 
     data class Scheduler(val enable: Boolean, val interval: Duration) {
     }
