@@ -53,7 +53,7 @@ class RatingController(
         // Расчет общей статистики
         val totalPlayers = userRepository.count()
         val totalGames = gameRepository.count()
-        val averageRating = 1000.0  // Можно рассчитать среднее значение рейтингов, если нужно
+        val averageRating = userRepository.averageRating()  // Можно рассчитать среднее значение рейтингов, если нужно
         val topPlayer = userRepository.findTopByOrderByRatingDesc()!!
 
         // Распределение рейтинга

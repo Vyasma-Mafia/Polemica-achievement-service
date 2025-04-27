@@ -411,6 +411,7 @@ class PlayerRatingService(
         val redTeam = extractTeamWithPoints(game.data.players, points.players) { it.isRed() }
         val blackTeam = extractTeamWithPoints(game.data.players, points.players) { it.isBlack() }
         val isRedWin = game.data.result == PolemicaGameResult.RED_WIN
+        val competitive = game.gamePlace.competitionId != null || game.data.tags?.find { it.contains("League") } != null
 
         updateRatings(
             game.gameId,
@@ -418,7 +419,7 @@ class PlayerRatingService(
             redTeam,
             !isRedWin,
             game.started ?: LocalDateTime.now(),
-            game.gamePlace.competitionId != null
+            competitive
         )
     }
 
