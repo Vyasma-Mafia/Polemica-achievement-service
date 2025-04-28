@@ -52,7 +52,11 @@ class AchievementTransactionalServiceImpl(
     override fun saveUsersFromGame(game: Game) {
         game.data.players?.forEach { player ->
             val playerId = player.player
-            if (playerId != null) {
+            val user = userRepository.findByIdOrNull(playerId)
+            if (user != null) {
+                user.username = player.username
+                userRepository.save(user)
+            } else if (playerId != null) {
                 userRepository.save(User(playerId, player.username))
             }
         }
