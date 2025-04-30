@@ -147,7 +147,7 @@
                 const seriesNumber = this.value;
                 const resultsContainer = document.getElementById(`results-${competitionId}`);
 
-                fetch(`/series-results/competition/${competitionId}/series/${seriesNumber}`)
+                fetch(`/clubs/polemicaspb/leagues/competition/${competitionId}/series/${seriesNumber}`)
                     .then(response => response.json())
                     .then(data => {
                         let html = `<h3>Результаты серии ${seriesNumber}</h3>
