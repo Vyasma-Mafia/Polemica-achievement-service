@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты серий игр в мафию</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .tournaments-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .tournament-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        @media (max-width: 1000px) {
+            .tournament-section {
+                flex: 1 1 100%;
+                max-width: none;
+            }
+        }
+
+        select, button {
+            padding: 8px 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .tournament-header {
+            margin-bottom: 15px;
+        }
+
+        .series-selector {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .series-selector label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Результаты серий игр в мафию</h1>
+
+    <div class="tournaments-container">
+        <div class="tournament-section" th:each="tournamentData : ${tournamentsData}">
+            <div class="tournament-header">
+                <h2 th:text="${tournamentData.competition.name}"></h2>
+                <div class="series-selector">
+                    <label>Выберите серию:</label>
+                    <select class="series-select" th:data-competition-id="${tournamentData.competition.id}">
+                        <option th:each="seriesNumber : ${tournamentData.seriesNumbers}"
+                                th:selected="${seriesNumber == tournamentData.currentSeries}"
+                                th:text="${'Серия ' + seriesNumber}"
+                                th:value="${seriesNumber}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-container" th:id="'results-' + ${tournamentData.competition.id}">
+                <h3 th:text="'Результаты серии ' + ${tournamentData.currentSeries}"></h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Игрок</th>
+                        <th>Баллы</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${tournamentData.playerPoints}">
+                        <td th:text="${player.first}"></td>
+                        <td th:text="${#strings.replace(#strings.replace(#numbers.formatDecimal(player.second, 1, 3), ',0', ''), '.0', '')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const seriesSelects = document.querySelectorAll('.series-select');
+
+        seriesSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const competitionId = this.getAttribute('data-competition-id');
+                const seriesNumber = this.value;
+                const resultsContainer = document.getElementById(`results-${competitionId}`);
+
+                fetch(`/series-results/competition/${competitionId}/series/${seriesNumber}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = `<h3>Результаты серии ${seriesNumber}</h3>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Игрок</th>
+                                                    <th>Баллы</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+
+                        data.forEach(player => {
+                            // Форматирование с удалением лишних нулей
+                            let points = player.second.toFixed(3);
+                            points = points.replace(/\.?0+$/, '');  // Удаляем все нули в конце и точку, если она стала последним символом
+
+                            html += `<tr>
+                                            <td>${player.first}</td>
+                                            <td>${points}</td>
+                                         </tr>`;
+                        });
+
+                        html += `</tbody></table>`;
+                        resultsContainer.innerHTML = html;
+                    });
+            });
+        });
+    });
+</script>
+</body>
+</html>
