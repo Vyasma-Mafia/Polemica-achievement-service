@@ -57,8 +57,9 @@ class CrawlerServiceImpl(
                             4
                         )
                     )
+                    val id = res.id ?: return@forEach
                     val game = Game(
-                        gameId = res.id,
+                        gameId = id,
                         data = res,
                         gamePlace = PolemicaGamePlace(competitionId = competition.id),
                         started = res.started
@@ -82,8 +83,9 @@ class CrawlerServiceImpl(
                 .forEach {
                     try {
                         val res = polemicaClient.getGameFromClub(PolemicaClient.PolemicaClubGameId(clubId, it.id, 4))
+                        val id = res.id ?: return@forEach
                         val game = Game(
-                            gameId = res.id,
+                            gameId = id,
                             data = res,
                             gamePlace = PolemicaGamePlace(clubId = clubId),
                             started = res.started

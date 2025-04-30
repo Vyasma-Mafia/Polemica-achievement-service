@@ -324,11 +324,11 @@ class RatingController(
 
         // Определяем команды
         val mafiaTeam = sortedRatingChanges.filter { history ->
-            game.data.players?.find { history.player.userId == it.player }?.role?.isBlack() == true
+            game.data.players?.find { history.player.userId == it.player?.id }?.role?.isBlack() == true
         }
 
         val civilianTeam = sortedRatingChanges.filter { history ->
-            game.data.players?.find { history.player.userId == it.player }?.role?.isRed() == true
+            game.data.players?.find { history.player.userId == it.player?.id }?.role?.isRed() == true
         }
 
         // Определяем победителя

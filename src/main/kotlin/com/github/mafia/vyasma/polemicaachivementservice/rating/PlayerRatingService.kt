@@ -432,7 +432,7 @@ class PlayerRatingService(
             ?.map { player ->
                 val playerPoints = points.find { it.position == player.position.value }?.points
                     ?: 0.0
-                Pair(player.player!!, playerPoints)
+                Pair(player.player!!.id, playerPoints)
             } ?: emptyList()
     }
 }

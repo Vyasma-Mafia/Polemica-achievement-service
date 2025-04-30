@@ -35,7 +35,7 @@ class AchievementTransactionalServiceImpl(
             val checkResult = achievement.check(game.data, player.position)
             if (player.player == null) continue
             if (checkResult == 0) continue
-            val user = userRepository.findByIdOrNull(player.player) ?: continue
+            val user = userRepository.findByIdOrNull(player.player?.id) ?: continue
             achievementGameUserRepository.save(
                 AchievementGameUser(
                     AchievementGameUserKey(
@@ -52,12 +52,12 @@ class AchievementTransactionalServiceImpl(
     override fun saveUsersFromGame(game: Game) {
         game.data.players?.forEach { player ->
             val playerId = player.player ?: return@forEach
-            val user = userRepository.findByIdOrNull(playerId)
+            val user = userRepository.findByIdOrNull(playerId.id)
             if (user != null) {
                 user.username = player.username
                 userRepository.save(user)
             } else {
-                userRepository.save(User(playerId, player.username))
+                userRepository.save(User(playerId.id, player.username))
             }
         }
         game.processedVersion += 1

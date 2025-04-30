@@ -91,8 +91,8 @@ class ResearchServiceImpl(
                 game.data.tags?.intersect(listOf("PremierLeague", "ChampionshipLeague"))?.isNotEmpty() ?: false
             val inCompetition = game.gamePlace.competitionId != null
             if (!(withTags || inCompetition)) return@forEach
-            for (player1 in data.players!!.filter { ids.contains(it.player) }) {
-                for (player2 in data.players!!.filter { ids.contains(it.player) }) {
+            for (player1 in data.players!!.filter { ids.contains(it.player?.id) }) {
+                for (player2 in data.players!!.filter { ids.contains(it.player?.id) }) {
                     val pair = normalizePair(Pair(player1.username, player2.username))
                     if (data.getRole(player1.position).isBlack() &&
                         data.getRole(player2.position).isBlack()
@@ -160,9 +160,9 @@ class ResearchServiceImpl(
         val counter = ResearchPairStatCounter()
         gameRepository.findAll().forEach { game ->
             val data = game.data
-            if (data.players!!.any { it.player == firstId } && data.players!!.any { it.player == secondId }) {
-                val firstRole = data.players!!.first { it.player == firstId }.role
-                val secondRole = data.players!!.first { it.player == secondId }.role
+            if (data.players!!.any { it.player?.id == firstId } && data.players!!.any { it.player?.id == secondId }) {
+                val firstRole = data.players!!.first { it.player?.id == firstId }.role
+                val secondRole = data.players!!.first { it.player?.id == secondId }.role
                 val isRedWin = data.isRedWin()
                 counter.firstRedSecondRedWin += if (firstRole.isRed() && secondRole.isRed() && isRedWin) 1 else 0
                 counter.firstRedSecondRedTotal += if (firstRole.isRed() && secondRole.isRed()) 1 else 0
@@ -226,8 +226,8 @@ class ResearchServiceImpl(
 
     fun getGamesForPerson(personId: Long, p: (PolemicaPlayer) -> Boolean = { true }): List<Game> {
         return gameRepository.findAll()
-            .filter { it.data.players!!.any { it.player == personId } }
-            .filter { p(it.data.players!!.first { it.player == personId }) }
+            .filter { it.data.players!!.any { it.player?.id == personId } }
+            .filter { p(it.data.players!!.first { it.player?.id == personId }) }
             .map { it }
     }
 

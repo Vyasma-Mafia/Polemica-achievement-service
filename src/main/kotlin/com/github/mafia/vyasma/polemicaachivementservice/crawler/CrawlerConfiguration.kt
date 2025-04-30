@@ -1,5 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.crawler
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
 import com.github.mafia.vyasma.polemica.library.client.PolemicaClientImpl
 import org.springframework.beans.factory.annotation.Value
@@ -18,11 +19,14 @@ class CrawlerConfiguration {
     private lateinit var polemicaPassword: String
 
     @Bean
-    fun polemicaWebClient(): PolemicaClient {
+    fun polemicaWebClient(
+        objectMapper: ObjectMapper
+    ): PolemicaClient {
         return PolemicaClientImpl(
             polemicaBaseUrl,
             polemicaUsername,
-            polemicaPassword
+            polemicaPassword,
+            objectMapper
         )
     }
 }
