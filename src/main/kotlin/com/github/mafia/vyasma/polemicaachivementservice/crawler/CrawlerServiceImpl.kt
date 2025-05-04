@@ -48,21 +48,24 @@ class CrawlerServiceImpl(
         games
             .filter { it.result != null }
             .filter { it.id !in gamesInBd || !withStopOnDb }
+            .map {
+                polemicaClient.getGameFromCompetition(
+                    PolemicaClient.PolemicaCompetitionGameId(
+                        competition.id,
+                        it.id,
+                        4
+                    )
+                )
+            }
+            .filter { it.scoringType == 1 }
             .forEach {
                 try {
-                    val res = polemicaClient.getGameFromCompetition(
-                        PolemicaClient.PolemicaCompetitionGameId(
-                            competition.id,
-                            it.id,
-                            4
-                        )
-                    )
-                    val id = res.id ?: return@forEach
+                    val id = it.id ?: return@forEach
                     val game = Game(
                         gameId = id,
-                        data = res,
+                        data = it,
                         gamePlace = PolemicaGamePlace(competitionId = competition.id),
-                        started = res.started
+                        started = it.started
                     )
                     gameRepository.save(game)
                 } catch (e: Exception) {
