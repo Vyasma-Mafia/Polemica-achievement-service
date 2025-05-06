@@ -152,7 +152,7 @@
                     <tbody>
                     <tr th:each="player : ${tournamentData.playerPoints}">
                         <td th:text="${player.first}"></td>
-                        <td th:text="${#strings.replace(#strings.replace(#numbers.formatDecimal(player.second, 1, 3), ',0', ''), '.0', '')}"></td>
+                        <td th:text="${player.second}"></td>
                     </tr>
                     </tbody>
                 </table>
@@ -189,9 +189,7 @@
                                             <tbody>`;
 
                         data.forEach(player => {
-                            // Форматирование с удалением лишних нулей
-                            let points = player.second.toFixed(3);
-                            points = points.replace(/\.?0+$/, '');  // Удаляем все нули в конце и точку, если она стала последним символом
+                            let points = player.second;
 
                             html += `<tr>
                                             <td>${player.first}</td>
