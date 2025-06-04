@@ -1,5 +1,6 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGameResult
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isRed
@@ -29,7 +30,8 @@ class RatingController(
     private val ratingHistoryRepository: PlayerRatingHistoryRepository,
     private val gameRepository: GameRepository,
     private val playerRatingHistoryRepository: PlayerRatingHistoryRepository,
-    private val recalibrationHistoryRepository: RecalibrationHistoryRepository
+    private val recalibrationHistoryRepository: RecalibrationHistoryRepository,
+    private val objectMapper: ObjectMapper
 ) {
 
     val logger = LoggerFactory.getLogger(this::class.java)
@@ -310,31 +312,22 @@ class RatingController(
 
     @GetMapping("/games/{gameId}")
     fun getGameResults(@PathVariable gameId: Long, model: Model): String {
-        // Получаем данные об игре
         val game = gameRepository.findById(gameId)
             .orElseThrow { EntityNotFoundException("Игра с ID $gameId не найдена") }
 
-        // Получаем историю изменения рейтинга для этой игры
         val ratingChanges = playerRatingHistoryRepository.findByGameId(gameId)
-
-        // Сортируем по позиции игрока в игре
         val sortedRatingChanges = ratingChanges.sortedBy {
             game.points?.players?.find { pts -> pts.position == it.player.userId.toInt() }?.position ?: Int.MAX_VALUE
         }
 
-        // Определяем команды
         val mafiaTeam = sortedRatingChanges.filter { history ->
             game.data.players?.find { history.player.userId == it.player?.id }?.role?.isBlack() == true
         }
-
         val civilianTeam = sortedRatingChanges.filter { history ->
             game.data.players?.find { history.player.userId == it.player?.id }?.role?.isRed() == true
         }
-
-        // Определяем победителя
         val winnerTeam = if (game.data.result == PolemicaGameResult.BLACK_WIN) "Мафия" else "Мирные"
 
-        // Статистика игры
         val gameStats = mapOf(
             "winnerTeam" to winnerTeam,
             "totalPlayers" to sortedRatingChanges.size,
@@ -342,9 +335,40 @@ class RatingController(
             "competitive" to (sortedRatingChanges.firstOrNull()?.competitive ?: false),
             "gameDate" to game.started
         )
-
-        // Лучший игрок (по очкам)
         val bestPlayer = sortedRatingChanges.maxByOrNull { it.pointsEarned }
+
+        // --- НАЧАЛО: Подготовка данных для изображений голосований ---
+        val votingPayloads = mutableListOf<Map<String, Any>>()
+
+        // Заглушка для первого голосования
+        val payload1 = mapOf(
+            "gameTitle" to "Игра #${game.gameId}: Голосование 1 (Пример)",
+            "votes" to listOf(mapOf("from" to 1, "to" to 2), mapOf("from" to 3, "to" to 4)),
+            "redPlayers" to listOf(5, 6),
+            "sheriffs" to listOf(7),
+            "absentPlayers" to listOf(8)
+        )
+        votingPayloads.add(payload1)
+
+        // Заглушка для второго голосования (можно добавить условие, чтобы не всегда было 2)
+        // Например, если в игре больше 5 ходов или что-то подобное в будущем
+        val payload2 = mapOf(
+            "gameTitle" to "Игра #${game.gameId}: Голосование 2 (Пример)",
+            "votes" to listOf(
+                mapOf("from" to 2, "to" to 1),
+                mapOf("from" to 4, "to" to 3),
+                mapOf("from" to 5, "to" to 6)
+            ),
+            "redPlayers" to listOf(7, 8),
+            "sheriffs" to listOf(9),
+            "absentPlayers" to listOf(10)
+        )
+        votingPayloads.add(payload2)
+        // Преобразуем каждый payload в JSON-строку для безопасной передачи в data-атрибут
+        val votingRequestsData = votingPayloads.map { objectMapper.writeValueAsString(it) }
+
+        model.addAttribute("votingRequestsData", votingRequestsData)
+        // --- КОНЕЦ: Подготовка данных для изображений голосований ---
 
         model.addAttribute("game", game)
         model.addAttribute("gameStats", gameStats)
@@ -352,6 +376,12 @@ class RatingController(
         model.addAttribute("civilianTeam", civilianTeam)
         model.addAttribute("bestPlayer", bestPlayer)
         model.addAttribute("allPlayers", sortedRatingChanges)
+
+        // Получаем рекалибровки для данной игры (если они есть и привязаны к gameId)
+        // Это пример, вам нужно будет реализовать логику получения рекалибровок для конкретной игры
+        // val recalibrationsForGame = recalibrationHistoryRepository.findByGameId(gameId) // Предположим, такой метод есть
+        // model.addAttribute("recalibrations", recalibrationsForGame)
+
 
         return "game-results"
     }

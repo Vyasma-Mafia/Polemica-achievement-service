@@ -8,12 +8,14 @@ import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.MetricsUtils
 import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
+import com.github.mafia.vyasma.polemica.library.utils.getFirstKilled
 import com.github.mafia.vyasma.polemica.library.utils.getRole
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
 import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemica.library.utils.isRedWin
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
+import com.github.mafia.vyasma.polemicaachivementservice.rating.GamePointsService
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
 import org.slf4j.LoggerFactory
@@ -25,7 +27,8 @@ import java.util.function.Predicate
 class ResearchServiceImpl(
     val gameRepository: GameRepository,
     val userRepository: UserRepository,
-    val polemicaClient: PolemicaClient
+    val polemicaClient: PolemicaClient,
+    val pointsService: GamePointsService
 ) : ResearchService {
     val logger = LoggerFactory.getLogger(ResearchServiceImpl::class.java)
 
@@ -253,6 +256,77 @@ class ResearchServiceImpl(
         return positionSimpleStats.entries.map { it.key to it.value }
     }
 
+    fun guessStat(filter: (Game) -> Boolean = { true }): MutableMap<Int, Pair<Double, Int>> {
+        val stat = mutableMapOf(
+            Pair(0, Pair(0.0, 0)),
+            Pair(1, Pair(0.0, 0)),
+            Pair(2, Pair(0.0, 0)),
+            Pair(3, Pair(0.0, 0))
+        )
+        gameRepository.findAll()
+            .filter { it.data.scoringVersion == "3.0" }
+            // .filter { it.data.tags?.contains("PremierLeague") ?: false || it.gamePlace.competitionId == 3232L }
+            // .filter { it.data.tags?.contains("ChampionshipLeague") ?: false || it.gamePlace.competitionId == 3249L }
+            // .filter { it.data.tags?.contains("LeagueOne") ?: false || it.gamePlace.competitionId == 3289L }
+            .filter { filter.invoke(it) }
+            .forEach {
+                val game = it.data
+                val fk = game.players?.find { it.position == game.getFirstKilled() }
+                if (fk == null) {
+                    return@forEach
+                }
+
+                val civs = fk.guess?.civs?.map {
+                    if (game.getRole(it).isRed()) {
+                        0.2
+                    } else {
+                        -0.1
+                    }
+                } ?: arrayListOf()
+                val mafs = fk.guess?.mafs?.map {
+                    if (game.getRole(it).isBlack()) {
+                        0.3
+                    } else {
+                        -0.1
+                    }
+                }?.toMutableList() ?: arrayListOf()
+                if (civs.size + mafs.size != 3) {
+                    return@forEach
+                }
+                if (mafs.filter { it == 0.3 }.size == 3) {
+                    mafs.add(0.1)
+                }
+                val old = stat[civs.size]!!
+                stat[civs.size] = Pair(old.first + civs.sum() + mafs.sum(), old.second + 1)
+            }
+        return stat
+    }
+
+    fun leagueOneLeaders(): List<MutableMap.MutableEntry<Long, MutableList<Double>>> {
+        val playerScores = mutableMapOf<Long, MutableList<Double>>()
+        gameRepository.findAll()
+            .filter { it.gamePlace.competitionId == 3289L }
+            .filter { it.data.num != null }
+            .groupBy { (it.data.num!! - 1) / 4 }
+            .forEach { games ->
+                println(games.value.map { it.data.num })
+                val playerScoresSeria = mutableMapOf<Long, Double>()
+                games.value.forEach { game ->
+                    pointsService.fetchPlayerStats(game.gameId).forEach { player ->
+                        game.data.players?.find { it.position.value == player.position }?.player?.id?.let { playerId ->
+                            playerScoresSeria.merge(playerId, player.points, Double::plus)
+                        }
+                    }
+                }
+                playerScoresSeria.entries.forEach { playerScore ->
+                    playerScores.getOrPut(playerScore.key) { arrayListOf() }.add(playerScore.value)
+                }
+            }
+
+        return playerScores.entries.sortedByDescending { it.value.sortedDescending().take(5).sum() }
+        // leagueOneLeaders().mapIndexed { i, it -> "${i + 1}. ${userRepository.findById(it.key).get().username}: ${"%.2f".format(it.value.sortedDescending().take(5).sum())} (${it.value.map { "%.2f".format(it) }})" }.joinToString("\n") { it }
+    }
+
     data class SimpleStat(
         var red: Long = 0,
         var black: Long = 0,
@@ -284,4 +358,122 @@ class ResearchServiceImpl(
     )
 
     data class TeamWinRate(val redWin: Long, val blackWin: Long)
+
+    fun getPlayerStatsCsv(profileUrls: List<String>): String {
+        val csvBuilder = StringBuilder()
+        // CSV Header
+        csvBuilder.appendLine(
+            listOf(
+                "Ссылка", "Username", "Рейтинг", "Количество игр (всего)",
+                "Количество игр (актуальный скоринг)",
+                "WinRate Мирный", "WinRate Мафия", "WinRate Дон", "WinRate Шериф",
+                "Средний доп Мирный", "Средний доп Мафия", "Средний доп Дон", "Средний доп Шериф"
+            ).joinToString(",")
+        )
+
+        val allGames = gameRepository.findAll().filter { it.data.scoringType == 1 } // Загружаем все игры один раз
+
+
+        for (url in profileUrls) {
+            val playerId = try {
+                url.substringAfterLast('/').substringBefore('#').toLongOrNull()
+            } catch (e: Exception) {
+                logger.warn("Could not parse player ID from URL: $url", e)
+                null
+            }
+
+            if (playerId == null) {
+                logger.warn("Skipping invalid URL (no player ID): $url")
+                // Можно добавить строку с N/A если нужно для полноты
+                // csvBuilder.appendLine(List(13) { if (it == 0) url else "N/A" }.joinToString(","))
+                continue
+            }
+
+            val userEntity = userRepository.findByIdOrNull(playerId) ?: continue
+            val username = userEntity.username
+            val rating = userEntity.rating ?: 0.0
+            val totalGamesPlayedByUser = userEntity.gamesPlayed
+
+            val roleStats = Role.entries.associateWith { RoleStatSummary() }.toMutableMap()
+            var gamesWithActualScoring = 0
+
+            // Фильтруем игры для текущего игрока
+            val playerGames = allGames.filter { game ->
+                game.data.players?.any { it.player?.id == playerId } ?: false
+            }
+
+            for (gameEntity in playerGames) {
+                val gameData = gameEntity.data // This is PolemicaGame
+                val playerInGame = gameData.players?.find { it.player?.id == playerId } ?: continue
+
+                val playerRole = playerInGame.role
+                val statSummary = roleStats[playerRole] ?: continue // Should always exist
+
+                statSummary.gamesPlayed++
+
+                val playerWon: Boolean = when {
+                    playerRole.isRed() && gameData.isRedWin() -> true
+                    playerRole.isBlack() && gameData.isBlackWin() -> true
+                    else -> false
+                }
+                if (playerWon) {
+                    statSummary.gamesWon++
+                }
+
+                if (gameData.scoringVersion == "3.0") {
+                    gamesWithActualScoring++
+                }
+
+                try {
+                    val points = gameEntity.points?.players?.find { it.position == playerInGame.position.value }?.points
+                    if (points != null) {
+                        val additionalPoints = points
+                        statSummary.totalAdditionalPoints += additionalPoints
+                        statSummary.gamesWithPointsCount++
+                    }
+                } catch (e: Exception) {
+                    logger.error(
+                        "Failed to fetch or process points for game ${gameEntity.gameId} for player $playerId",
+                        e
+                    )
+                    // Не увеличиваем gamesWithPointsCount, если не смогли получить очки
+                }
+            }
+
+            // Форматирование с двумя знаками после запятой для Double
+            fun Double.format() = "%.2f".format(this)
+
+            csvBuilder.appendLine(
+                listOf(
+                    url,
+                    username,
+                    rating.format(),
+                    totalGamesPlayedByUser.toString(), // Используем данные из User entity для общего числа игр
+                    gamesWithActualScoring.toString(),
+                    roleStats[Role.PEACE]?.winRate?.format() ?: "0.00",
+                    roleStats[Role.MAFIA]?.winRate?.format() ?: "0.00",
+                    roleStats[Role.DON]?.winRate?.format() ?: "0.00",
+                    roleStats[Role.SHERIFF]?.winRate?.format() ?: "0.00",
+                    roleStats[Role.PEACE]?.averageAdditionalPoints?.format() ?: "0.00",
+                    roleStats[Role.MAFIA]?.averageAdditionalPoints?.format() ?: "0.00",
+                    roleStats[Role.DON]?.averageAdditionalPoints?.format() ?: "0.00",
+                    roleStats[Role.SHERIFF]?.averageAdditionalPoints?.format() ?: "0.00"
+                ).joinToString(",")
+            )
+        }
+        return csvBuilder.toString()
+    }
+
+    data class RoleStatSummary(
+        var gamesPlayed: Int = 0,
+        var gamesWon: Int = 0,
+        var totalAdditionalPoints: Double = 0.0,
+        var gamesWithPointsCount: Int = 0 // To average additional points correctly
+    ) {
+        val winRate: Double
+            get() = if (gamesPlayed > 0) gamesWon.toDouble() / gamesPlayed else 0.0
+
+        val averageAdditionalPoints: Double
+            get() = if (gamesWithPointsCount > 0) totalAdditionalPoints / gamesWithPointsCount else 0.0
+    }
 }

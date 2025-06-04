@@ -36,6 +36,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         }
 
         .game-header {
@@ -76,7 +77,7 @@
         }
 
         .best-player {
-            border: 2px solid gold;
+            border: 2px solid gold !important; /* ensure it overrides table styles */
             position: relative;
         }
 
@@ -86,6 +87,7 @@
             top: -10px;
             right: -10px;
             font-size: 24px;
+            line-height: 1;
         }
 
         .game-card {
@@ -96,6 +98,20 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
+        .voting-image-section {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .voting-image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
@@ -105,23 +121,24 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h1>
-                        <span class="badge bg-warning text-dark me-2" th:if="${gameStats.competitive}">
-                            <i class="bi bi-trophy"></i> Турнир
-                        </span>
+                    <span class="badge bg-warning text-dark me-2" th:if="${gameStats.competitive}">
+                        <i class="bi bi-trophy"></i> Турнир
+                    </span>
                     Игра #<span th:text="${game.gameId}">12345</span>
                 </h1>
                 <p class="lead mb-0">
-                    <span th:text="${#temporals.format(gameStats.gameDate, 'dd.MM.yyyy HH:mm')}">01.01.2023 15:30</span>
+                    <span th:text="${gameStats.gameDate != null ? #temporals.format(gameStats.gameDate, 'dd.MM.yyyy HH:mm') : 'Дата не указана'}">01.01.2023 15:30</span>
                     — Победа команды <span th:class="${gameStats.winnerTeam == 'Мафия' ? 'text-danger' : 'text-success'}"
                         th:text="${gameStats.winnerTeam}">Мирные</span>
                 </p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 <div class="btn-group">
-                    <a class="btn btn-outline-light" href="/games">
-                        <i class="bi bi-list"></i> Все игры
+                    <a class="btn btn-outline-light" th:href="@{/rating}"> <!-- Ссылка на главную страницу рейтинга -->
+                        <i class="bi bi-list"></i> Все игроки
                     </a>
-                    <a class="btn btn-outline-light" th:href="@{'https://polemicagame.com/match/' + ${game.gameId}}">
+                    <a class="btn btn-outline-light" target="_blank"
+                            th:href="@{'https://polemicagame.com/match/' + ${game.gameId}}">
                         <i class="bi bi-journal-text"></i> Лог игры
                     </a>
                 </div>
@@ -147,7 +164,8 @@
                 <div class="card-body text-center">
                     <i class="bi bi-trophy fs-1 text-warning mb-2"></i>
                     <h5 class="card-title">Победа</h5>
-                    <div class="display-6" th:class="${gameStats.winnerTeam == 'Мафия' ? 'text-danger' : 'text-success'}"
+                    <div class="display-6"
+                            th:classappend="${gameStats.winnerTeam == 'Мафия' ? 'text-danger' : 'text-success'}"
                             th:text="${gameStats.winnerTeam}">Мирные
                     </div>
                 </div>
@@ -158,13 +176,16 @@
                 <div class="card-body text-center">
                     <i class="bi bi-star fs-1 text-warning mb-2"></i>
                     <h5 class="card-title">Лучший игрок</h5>
-                    <div class="display-6">
-                        <a th:href="@{'/rating/player/' + ${bestPlayer.player.userId}}"
-                                th:text="${bestPlayer.player.username}">Player</a>
-                    </div>
-                    <div class="text-muted"
-                            th:text="${#numbers.formatDecimal(bestPlayer.pointsEarned, 1, 1) + ' очков'}">1.5 очков
-                    </div>
+                    <th:block th:if="${bestPlayer != null}">
+                        <div class="display-6">
+                            <a th:href="@{'/rating/player/' + ${bestPlayer.player.userId}}"
+                                    th:text="${bestPlayer.player.username}">Player</a>
+                        </div>
+                        <div class="text-muted"
+                                th:text="${#numbers.formatDecimal(bestPlayer.pointsEarned, 1, 1) + ' очков'}">1.5 очков
+                        </div>
+                    </th:block>
+                    <div class="display-6" th:if="${bestPlayer == null}">-</div>
                 </div>
             </div>
         </div>
@@ -181,18 +202,17 @@
     </div>
 
     <!-- Команда мафии -->
-    <div class="team-section mafia-section mb-4">
+    <div class="team-section mafia-section mb-4" th:if="${mafiaTeam != null && !mafiaTeam.isEmpty()}">
         <h3 class="mb-3">
-            <i class="bi bi-diamond-fill text-danger me-2"></i>
+            <i class="bi bi-person-bounding-box text-danger me-2"></i> <!-- Обновил иконку -->
             Команда мафии
             <span class="badge bg-danger ms-2" th:if="${gameStats.winnerTeam == 'Мафия'}">Победа</span>
         </h3>
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>Игрок</th>
-                    <th>Роль</th>
                     <th>Очки</th>
                     <th>Рейтинг до</th>
                     <th>Изменение</th>
@@ -201,11 +221,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:class="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${mafiaTeam}">
+                <tr th:classappend="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${mafiaTeam}">
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="player-avatar me-2">
-                                <span th:text="${#strings.substring(player.player.username, 0, 1).toUpperCase()}">A</span>
+                                <span th:text="${player.player.username != null && player.player.username.length() > 0 ? #strings.substring(player.player.username, 0, 1).toUpperCase() : '?'}">A</span>
                             </div>
                             <a th:href="@{'/rating/player/' + ${player.player.userId}}"
                                     th:text="${player.player.username}">Username</a>
@@ -236,14 +256,14 @@
     </div>
 
     <!-- Команда мирных -->
-    <div class="team-section civilian-section">
+    <div class="team-section civilian-section" th:if="${civilianTeam != null && !civilianTeam.isEmpty()}">
         <h3 class="mb-3">
-            <i class="bi bi-people-fill text-success me-2"></i>
+            <i class="bi bi-shield-check text-success me-2"></i> <!-- Обновил иконку -->
             Команда мирных
             <span class="badge bg-success ms-2" th:if="${gameStats.winnerTeam == 'Мирные'}">Победа</span>
         </h3>
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>Игрок</th>
@@ -256,11 +276,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:class="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${civilianTeam}">
+                <tr th:classappend="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${civilianTeam}">
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="player-avatar me-2">
-                                <span th:text="${#strings.substring(player.player.username, 0, 1).toUpperCase()}">A</span>
+                                <span th:text="${player.player.username != null && player.player.username.length() > 0 ? #strings.substring(player.player.username, 0, 1).toUpperCase() : '?'}">A</span>
                             </div>
                             <a th:href="@{'/rating/player/' + ${player.player.userId}}"
                                     th:text="${player.player.username}">Username</a>
@@ -290,11 +310,40 @@
         </div>
     </div>
 
+    <!-- Изображения голосований -->
+    <div class="voting-image-section" th:if="${votingRequestsData != null && !votingRequestsData.isEmpty()}">
+        <h3 class="mb-3">
+            <i class="bi bi-pie-chart-fill text-primary me-2"></i>
+            Голосования
+        </h3>
+        <div class="text-center mb-4 voting-image-container" th:each="payloadJson, iterStat : ${votingRequestsData}">
+            <!-- Заголовок для каждого голосования можно взять из payload, если он там есть, или оставить генерируемый -->
+            <!-- <h4 th:text="'Голосование #' + ${iterStat.count}"></h4> -->
+            <img alt="Результаты голосования (загрузка)"
+                    class="img-fluid rounded shadow-sm"
+                    src="https://via.placeholder.com/800x60.png?text=Загрузка+результатов+голосования..."
+                    th:attr="data-payload=${payloadJson}"
+                    th:id="'votingImage' + ${iterStat.count}" />
+            <p class="text-muted mt-1" th:id="'votingImageStatus' + ${iterStat.count}">Подготовка данных...</p>
+        </div>
+    </div>
+    <div class="voting-image-section" th:if="${votingRequestsData == null || votingRequestsData.isEmpty()}">
+        <h3 class="mb-3">
+            <i class="bi bi-pie-chart-fill text-primary me-2"></i>
+            Голосования
+        </h3>
+        <div class="alert alert-info">
+            Данные по голосованиям для этой игры отсутствуют или не были извлечены.
+        </div>
+    </div>
+
     <!-- Рекалибровки в игре, если были -->
+    <!-- Этот блок будет отображаться, только если в модель будет добавлен атрибут 'recalibrations' -->
+    <!-- для метода getGameResults, содержащий рекалибровки, специфичные для ДАННОЙ игры -->
     <div class="mt-5" th:if="${recalibrations != null && !recalibrations.isEmpty()}">
         <h3 class="mb-3">Рекалибровки в этой игре</h3>
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-hover">
                 <thead>
                 <tr>
                     <th>Игрок</th>
@@ -325,15 +374,94 @@
         <div class="row">
             <div class="col-md-6">
                 <h5>Мафия &mdash; Рейтинговая система</h5>
-                <p class="text-muted">Система рейтинга OpenSkill для игры Мафия</p>
+                <p class="text-muted small">Система рейтинга OpenSkill для игры Мафия</p>
             </div>
             <div class="col-md-6 text-md-end">
-                <p class="mb-0 text-muted">&copy; 2023 Все права защищены</p>
+                <p class="mb-0 text-muted small">&copy; <span th:text="${#dates.year(#dates.createNow())}">2023</span>
+                    Все права защищены</p>
             </div>
         </div>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageElements = document.querySelectorAll('.voting-image-container img[data-payload]');
+        const apiUrl = 'https://bba16qvivqnq5gf6gatk.containers.yandexcloud.net/generate-image';
+
+        imageElements.forEach(async (imgElement) => {
+            const payloadString = imgElement.getAttribute('data-payload');
+            const imageId = imgElement.id;
+            const statusElementId = imageId.replace('votingImage', 'votingImageStatus');
+            const statusElement = document.getElementById(statusElementId);
+
+            try {
+                if (!payloadString) {
+                    throw new Error('Отсутствуют данные (payload) для генерации изображения.');
+                }
+
+                // Пытаемся распарсить JSON, чтобы извлечь gameTitle для подписи, если нужно
+                let titleForStatus = 'Голосование';
+                try {
+                    const tempPayload = JSON.parse(payloadString);
+                    if (tempPayload.gameTitle) {
+                        titleForStatus = tempPayload.gameTitle; // Используем gameTitle из payload
+                    }
+                } catch (e) { /* не удалось распарсить, используем дефолтный */
+                }
+
+
+                if (statusElement) statusElement.textContent = `Загрузка "${titleForStatus}"...`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: payloadString // payloadString УЖЕ является JSON строкой из data-атрибута
+                });
+
+                if (!response.ok) {
+                    let errorText = `Код: ${response.status}`;
+                    try {
+                        const bodyText = await response.text(); // Читаем тело ответа, если есть
+                        errorText += `. ${bodyText.substring(0, 100)}`; // Ограничиваем длину, чтобы не загромождать
+                    } catch (e) { /* не удалось прочитать тело */
+                    }
+                    throw new Error(`Ошибка сети при запросе изображения. ${errorText}`);
+                }
+
+                const imageBlob = await response.blob();
+
+                if (!imageBlob.type || !imageBlob.type.startsWith('image/')) {
+                    throw new Error(`Сервер вернул не изображение, а тип: ${imageBlob.type || 'неизвестный тип'}. Размер: ${imageBlob.size} байт.`);
+                }
+                if (imageBlob.size < 100) { // Простая проверка на очень маленький размер, что может указывать на ошибку
+                    throw new Error(`Получено слишком маленькое изображение (${imageBlob.size} байт), возможно, это ошибка.`);
+                }
+
+
+                const imageUrl = URL.createObjectURL(imageBlob);
+                imgElement.src = imageUrl;
+                imgElement.alt = `Результаты голосования "${titleForStatus}" (загружено)`;
+                if (statusElement) statusElement.style.display = 'none'; // Скрыть статус после успешной загрузки
+
+            } catch (error) {
+                console.error('Ошибка при генерации изображения голосования:', error, 'для элемента:', imgElement.id, 'с payload:', payloadString);
+                imgElement.alt = 'Не удалось загрузить изображение голосования.';
+                if (statusElement) {
+                    statusElement.innerHTML = `<span class="text-danger">Ошибка:</span> ${error.message}`;
+                    statusElement.classList.remove('text-muted');
+                    statusElement.classList.add('text-danger', 'fw-bold');
+                }
+                // Можно установить src на стандартную картинку-ошибку
+                imgElement.src = `https://via.placeholder.com/800x60.png?text=Ошибка+загрузки+изображения`;
+            }
+        });
+    });
+    /*]]>*/
+</script>
 </body>
 </html>
