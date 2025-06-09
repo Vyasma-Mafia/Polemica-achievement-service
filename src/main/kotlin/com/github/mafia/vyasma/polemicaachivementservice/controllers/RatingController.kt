@@ -381,7 +381,7 @@ class RatingController(
 
         // 1. Получаем глобальную информацию об игроках, которая не меняется от раунда к раунду.
         val playersByPosition = gameData.players?.associateBy { it.position } ?: emptyMap()
-        val redPlayers = playersByPosition.values.filter { it.role.isRed() }.map { it.position }
+        val redPlayers = playersByPosition.values.filter { it.role == Role.PEACE }.map { it.position }
         val sheriffs = playersByPosition.values.filter { it.role == Role.SHERIFF }.map { it.position }
 
         // Определяем игроков, которые вообще не участвовали в игре (например, если игра на 9ых)
