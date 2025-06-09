@@ -112,6 +112,21 @@
             height: auto;
             border: 1px solid #dee2e6;
         }
+
+        .voting-image-container {
+            /* Позволяет элементу расти и сжиматься, базовая ширина 400px */
+            flex: 1 1 400px;
+            /* Максимальная ширина, чтобы на больших экранах не растягивалось слишком сильно */
+            max-width: 45%;
+        }
+
+        /* Медиа-запрос для мобильных устройств */
+        @media (max-width: 768px) {
+            .voting-image-container {
+                /* На маленьких экранах картинка занимает почти всю ширину */
+                max-width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -316,24 +331,35 @@
             <i class="bi bi-pie-chart-fill text-primary me-2"></i>
             Голосования
         </h3>
-        <div class="text-center mb-4 voting-image-container" th:each="payloadJson, iterStat : ${votingRequestsData}">
-            <!-- Заголовок для каждого голосования можно взять из payload, если он там есть, или оставить генерируемый -->
-            <!-- <h4 th:text="'Голосование #' + ${iterStat.count}"></h4> -->
-            <img alt="Результаты голосования (загрузка)"
-                    class="img-fluid rounded shadow-sm"
-                    src="https://via.placeholder.com/800x60.png?text=Загрузка+результатов+голосования..."
-                    th:attr="data-payload=${payloadJson}"
-                    th:id="'votingImage' + ${iterStat.count}" />
-            <p class="text-muted mt-1" th:id="'votingImageStatus' + ${iterStat.count}">Подготовка данных...</p>
+
+        <!-- Flex-контейнер для отображения картинок в ряд -->
+        <div class="d-flex flex-row flex-wrap justify-content-center gap-3">
+
+            <!-- Цикл для отрисовки каждой картинки голосования -->
+            <div class="voting-image-container text-center"
+                    th:each="payloadJson, iterStat : ${votingRequestsData}">
+
+                <img alt="Результаты голосования (загрузка)"
+                        class="img-fluid rounded shadow-sm"
+                        src="https://via.placeholder.com/400x60.png?text=Загрузка+результатов+голосования..."
+                        th:attr="data-payload=${payloadJson}"
+                        th:id="'votingImage' + ${iterStat.count}" />
+
+                <p class="text-muted mt-1 small" th:id="'votingImageStatus' + ${iterStat.count}">Подготовка
+                    данных...</p>
+            </div>
+
         </div>
     </div>
+
+    <!-- Блок на случай, если данных о голосованиях нет -->
     <div class="voting-image-section" th:if="${votingRequestsData == null || votingRequestsData.isEmpty()}">
         <h3 class="mb-3">
             <i class="bi bi-pie-chart-fill text-primary me-2"></i>
             Голосования
         </h3>
         <div class="alert alert-info">
-            Данные по голосованиям для этой игры отсутствуют или не были извлечены.
+            Данные по голосованиям для этой игры отсутствуют.
         </div>
     </div>
 

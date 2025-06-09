@@ -1,7 +1,10 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGameResult
+import com.github.mafia.vyasma.polemica.library.model.game.Position
+import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
@@ -338,32 +341,8 @@ class RatingController(
         val bestPlayer = sortedRatingChanges.maxByOrNull { it.pointsEarned }
 
         // --- НАЧАЛО: Подготовка данных для изображений голосований ---
-        val votingPayloads = mutableListOf<Map<String, Any>>()
+        val votingPayloads = prepareVotingPayloads(game.data)
 
-        // Заглушка для первого голосования
-        val payload1 = mapOf(
-            "gameTitle" to "Игра #${game.gameId}: Голосование 1 (Пример)",
-            "votes" to listOf(mapOf("from" to 1, "to" to 2), mapOf("from" to 3, "to" to 4)),
-            "redPlayers" to listOf(5, 6),
-            "sheriffs" to listOf(7),
-            "absentPlayers" to listOf(8)
-        )
-        votingPayloads.add(payload1)
-
-        // Заглушка для второго голосования (можно добавить условие, чтобы не всегда было 2)
-        // Например, если в игре больше 5 ходов или что-то подобное в будущем
-        val payload2 = mapOf(
-            "gameTitle" to "Игра #${game.gameId}: Голосование 2 (Пример)",
-            "votes" to listOf(
-                mapOf("from" to 2, "to" to 1),
-                mapOf("from" to 4, "to" to 3),
-                mapOf("from" to 5, "to" to 6)
-            ),
-            "redPlayers" to listOf(7, 8),
-            "sheriffs" to listOf(9),
-            "absentPlayers" to listOf(10)
-        )
-        votingPayloads.add(payload2)
         // Преобразуем каждый payload в JSON-строку для безопасной передачи в data-атрибут
         val votingRequestsData = votingPayloads.map { objectMapper.writeValueAsString(it) }
 
@@ -385,4 +364,71 @@ class RatingController(
 
         return "game-results"
     }
+
+    // Внутри класса RatingController
+
+    /**
+     * Подготавливает данные для генерации изображений голосований.
+     * Корректно обрабатывает раунды голосования (num=1, 2, ...) в рамках
+     * каждого дня как отдельные события.
+     *
+     * @param game Объект игры, содержащий все данные.
+     * @return Список Map, где каждая Map - это готовый payload для одного изображения.
+     */
+    private fun prepareVotingPayloads(game: PolemicaGame): List<Map<String, Any>> {
+        val gameData = game
+        val allVotes = gameData.votes ?: return emptyList()
+
+        // 1. Получаем глобальную информацию об игроках, которая не меняется от раунда к раунду.
+        val playersByPosition = gameData.players?.associateBy { it.position } ?: emptyMap()
+        val redPlayers = playersByPosition.values.filter { it.role.isRed() }.map { it.position }
+        val sheriffs = playersByPosition.values.filter { it.role == Role.SHERIFF }.map { it.position }
+
+        // Определяем игроков, которые вообще не участвовали в игре (например, если игра на 9ых)
+        // Этот список будет постоянным для всех изображений в рамках одной игры.
+        val allPossiblePositions = Position.entries.toSet()
+
+        val finalPayloads = mutableListOf<Map<String, Any>>()
+
+        // 2. Группируем все голоса по дням. Логика для каждого дня независима.
+        val votesByDay = allVotes.groupBy { it.day }
+
+        // 3. Обрабатываем каждый день в хронологическом порядке.
+        votesByDay.entries.sortedBy { it.key }.forEach { (day, dayVotes) ->
+
+            val candidates = dayVotes.takeWhile { it.num == 0 }.map { it.candidate }
+
+            // 3.1. Группируем РЕАЛЬНЫЕ голоса (где есть отметка "кто за кого") по номеру раунда.
+            val votingRounds = dayVotes
+                .filter { it.num != null && it.num != 0 }
+                .groupBy { it.num!! }
+
+            // 3.2. Для каждого раунда в этот день создаем отдельное изображение.
+            votingRounds.entries.sortedBy { it.key }.forEach { (roundNum, roundVotes) ->
+
+                val players = roundVotes.map { it.voter }.toSet()
+                val absentPlayers = allPossiblePositions - players
+                // 4. Формируем payload для этого конкретного раунда.
+                // Голоса передаются в виде плоского списка, как того требует API сервиса.
+                val formattedVotes = roundVotes.map { vote -> mapOf("from" to vote.voter, "to" to vote.candidate) }
+
+                val payload = mapOf(
+                    // Заголовок точно идентифицирует день и раунд.
+                    "gameTitle" to "Игра #${game.id}: День $day, раунд $roundNum",
+                    "votes" to formattedVotes,
+                    "redPlayers" to redPlayers,
+                    "sheriffs" to sheriffs,
+                    // Используем список игроков, отсутствовавших на старте игры.
+                    "absentPlayers" to absentPlayers.toList(),
+                    "candidatesOrder" to candidates
+                )
+
+                finalPayloads.add(payload)
+            }
+        }
+
+        return finalPayloads
+    }
+
+
 }

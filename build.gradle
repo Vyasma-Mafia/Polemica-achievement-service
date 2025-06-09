@@ -58,7 +58,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator:3.3.5'
     // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.14.2'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.14.7'
     // https://mvnrepository.com/artifact/io.micrometer/micrometer-tracing-bridge-brave
     implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.4.1'
 
