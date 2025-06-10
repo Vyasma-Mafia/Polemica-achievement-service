@@ -5,8 +5,6 @@ import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGameResult
 import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
-import com.github.mafia.vyasma.polemica.library.utils.isBlack
-import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.RecalibrationHistory
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -320,15 +318,9 @@ class RatingController(
 
         val ratingChanges = playerRatingHistoryRepository.findByGameId(gameId)
         val sortedRatingChanges = ratingChanges.sortedBy {
-            game.points?.players?.find { pts -> pts.position == it.player.userId.toInt() }?.position ?: Int.MAX_VALUE
+            game.data.players?.find { player -> player.player?.id == it.player.userId }?.position?.value ?: 0
         }
 
-        val mafiaTeam = sortedRatingChanges.filter { history ->
-            game.data.players?.find { history.player.userId == it.player?.id }?.role?.isBlack() == true
-        }
-        val civilianTeam = sortedRatingChanges.filter { history ->
-            game.data.players?.find { history.player.userId == it.player?.id }?.role?.isRed() == true
-        }
         val winnerTeam = if (game.data.result == PolemicaGameResult.BLACK_WIN) "Мафия" else "Мирные"
 
         val gameStats = mapOf(
@@ -351,10 +343,9 @@ class RatingController(
 
         model.addAttribute("game", game)
         model.addAttribute("gameStats", gameStats)
-        model.addAttribute("mafiaTeam", mafiaTeam)
-        model.addAttribute("civilianTeam", civilianTeam)
         model.addAttribute("bestPlayer", bestPlayer)
         model.addAttribute("allPlayers", sortedRatingChanges)
+        model.addAttribute("gamePlayers", game.data.players?.associateBy { it.player?.id ?: 0 })
 
         // Получаем рекалибровки для данной игры (если они есть и привязаны к gameId)
         // Это пример, вам нужно будет реализовать логику получения рекалибровок для конкретной игры

@@ -1,10 +1,10 @@
 app:
   crawl-scheduler:
     enable: true
-    interval: 1h
+    interval: 10m
   achievement-check-scheduler:
     enable: true
-    interval: 1h
+    interval: 10m
   crawlClubs:
     - 289 # ЧХ
     - 72 # Polemica Spb

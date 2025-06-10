@@ -12,7 +12,7 @@
             color: white;
         }
 
-        .badge-civilian {
+        .badge-peace {
             background-color: #198754;
             color: white;
         }
@@ -216,71 +216,24 @@
         </div>
     </div>
 
-    <!-- Команда мафии -->
-    <div class="team-section mafia-section mb-4" th:if="${mafiaTeam != null && !mafiaTeam.isEmpty()}">
-        <h3 class="mb-3">
+    <!-- Команда мирных -->
+    <div class="team-section"
+            th:classappend="${gameStats.winnerTeam == 'Мафия' ? 'mafia-section' : 'civilian-section' }">
+        <h3 class="mb-3" th:if="${gameStats.winnerTeam == 'Мафия'}">
             <i class="bi bi-person-bounding-box text-danger me-2"></i> <!-- Обновил иконку -->
             Команда мафии
-            <span class="badge bg-danger ms-2" th:if="${gameStats.winnerTeam == 'Мафия'}">Победа</span>
+            <span class="badge bg-danger ms-2">Победа</span>
         </h3>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>Игрок</th>
-                    <th>Очки</th>
-                    <th>Рейтинг до</th>
-                    <th>Изменение</th>
-                    <th>Рейтинг после</th>
-                    <th>Вес</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:classappend="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${mafiaTeam}">
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="player-avatar me-2">
-                                <span th:text="${player.player.username != null && player.player.username.length() > 0 ? #strings.substring(player.player.username, 0, 1).toUpperCase() : '?'}">A</span>
-                            </div>
-                            <a th:href="@{'/rating/player/' + ${player.player.userId}}"
-                                    th:text="${player.player.username}">Username</a>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge badge-mafia">Мафия</span>
-                    </td>
-                    <td th:text="${#numbers.formatDecimal(player.pointsEarned, 1, 1)}">1.0</td>
-                    <td th:text="${#numbers.formatDecimal(player.oldMu - 3 * player.oldSigma, 1, 0)}">1000</td>
-                    <td>
-                                <span class="rating-up" th:if="${player.muDelta > 0}">
-                                    <i class="bi bi-arrow-up-short"></i>
-                                    <span th:text="${'+' + #numbers.formatDecimal(player.muDelta, 1, 1)}">+5.5</span>
-                                </span>
-                        <span class="rating-down" th:if="${player.muDelta < 0}">
-                                    <i class="bi bi-arrow-down-short"></i>
-                                    <span th:text="${#numbers.formatDecimal(player.muDelta, 1, 1)}">-3.2</span>
-                                </span>
-                        <span class="rating-neutral" th:if="${player.muDelta == 0}">0</span>
-                    </td>
-                    <td th:text="${#numbers.formatDecimal(player.newMu - 3 * player.newSigma, 1, 0)}">1050</td>
-                    <td th:text="${#numbers.formatDecimal(player.weight, 1, 2)}">1.25</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Команда мирных -->
-    <div class="team-section civilian-section" th:if="${civilianTeam != null && !civilianTeam.isEmpty()}">
-        <h3 class="mb-3">
+        <h3 class="mb-3" th:if="${gameStats.winnerTeam == 'Мирные'}">
             <i class="bi bi-shield-check text-success me-2"></i> <!-- Обновил иконку -->
             Команда мирных
-            <span class="badge bg-success ms-2" th:if="${gameStats.winnerTeam == 'Мирные'}">Победа</span>
+            <span class="badge bg-success ms-2">Победа</span>
         </h3>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                 <tr>
+                    <th>Слот</th>
                     <th>Игрок</th>
                     <th>Роль</th>
                     <th>Очки</th>
@@ -291,7 +244,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:classappend="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${civilianTeam}">
+                <tr th:classappend="${player == bestPlayer ? 'best-player' : ''}" th:each="player : ${allPlayers}">
+                    <td>
+                        <span th:text="${gamePlayers[player.player.userId].position.value}"></span>
+                    </td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="player-avatar me-2">
@@ -302,7 +258,9 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge badge-civilian">Мирный</span>
+                        <span class="badge"
+                                th:classappend="@{'badge-' + ${#strings.toLowerCase(gamePlayers[player.player.userId].role)}}"
+                                th:text="${#strings.toLowerCase(gamePlayers[player.player.userId].role)}"></span>
                     </td>
                     <td th:text="${#numbers.formatDecimal(player.pointsEarned, 1, 1)}">1.0</td>
                     <td th:text="${#numbers.formatDecimal(player.oldMu - 3 * player.oldSigma, 1, 0)}">1000</td>
