@@ -5,6 +5,7 @@ import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGame
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGameResult
 import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.getPlayerNumStarted
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.RecalibrationHistory
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -387,7 +388,14 @@ class RatingController(
         // 3. Обрабатываем каждый день в хронологическом порядке.
         votesByDay.entries.sortedBy { it.key }.forEach { (day, dayVotes) ->
 
-            val candidates = dayVotes.takeWhile { it.num == 0 }.map { it.candidate }
+            val firstSpeech = game.getPlayerNumStarted(day)
+            val speechOrder =
+                Position.entries.filter { it >= firstSpeech }.sorted() + Position.entries.filter { it < firstSpeech }
+                    .sorted()
+
+            val candidates = dayVotes.takeWhile { it.num == 0 }
+                .sortedBy { speechOrder.indexOf(it.voter) }
+                .map { it.candidate }
 
             // 3.1. Группируем РЕАЛЬНЫЕ голоса (где есть отметка "кто за кого") по номеру раунда.
             val votingRounds = dayVotes
