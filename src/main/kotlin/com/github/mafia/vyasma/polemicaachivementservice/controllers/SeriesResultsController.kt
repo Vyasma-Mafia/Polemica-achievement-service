@@ -35,7 +35,7 @@ class SeriesResultsController(
             null
         ),
         PolemicaClient.PolemicaCompetition(
-            3249,
+            3684,
             "ChampionsipLeague",
             null,
             null,
