@@ -6,6 +6,7 @@ import com.github.mafia.vyasma.polemica.library.model.game.PolemicaGameResult
 import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.getPlayerNumStarted
+import com.github.mafia.vyasma.polemica.library.utils.getVotingParticipants
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.RecalibrationHistory
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -411,6 +412,7 @@ class RatingController(
                 // Голоса передаются в виде плоского списка, как того требует API сервиса.
                 val formattedVotes = roundVotes.map { vote -> mapOf("from" to vote.voter, "to" to vote.candidate) }
 
+                val candidatesInRound = candidates.filter { it in game.getVotingParticipants(day, roundNum) }
                 val payload = mapOf(
                     // Заголовок точно идентифицирует день и раунд.
                     "gameTitle" to "Игра #${game.id}: День $day, раунд $roundNum",
@@ -419,7 +421,7 @@ class RatingController(
                     "sheriffs" to sheriffs,
                     // Используем список игроков, отсутствовавших на старте игры.
                     "absentPlayers" to absentPlayers.toList(),
-                    "candidatesOrder" to candidates
+                    "candidatesOrder" to candidatesInRound
                 )
 
                 finalPayloads.add(payload)
