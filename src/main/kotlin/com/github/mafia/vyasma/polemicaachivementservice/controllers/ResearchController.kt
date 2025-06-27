@@ -1,18 +1,28 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
+import com.github.mafia.vyasma.polemica.library.utils.firstNightKills
+import com.github.mafia.vyasma.polemica.library.utils.sumAward
+import com.github.mafia.vyasma.polemica.library.utils.sumQuessScore
+import com.github.mafia.vyasma.polemica.library.utils.sumScore
+import com.github.mafia.vyasma.polemica.library.utils.winAsDonOrSher
+import com.github.mafia.vyasma.polemicaachivementservice.rating.PolemicaTournamentService
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchPairStat
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchService
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchVotedByFourRedVotesAnswer
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("research")
-class ResearchController(val researchService: ResearchService) {
+class ResearchController(
+    val researchService: ResearchService,
+    private val polemicaTournamentService: PolemicaTournamentService
+) {
 
     @Operation(hidden = true)
     @GetMapping("/blank")
@@ -68,5 +78,32 @@ class ResearchController(val researchService: ResearchService) {
     @GetMapping("/twoTwoTwoTwoDivInNinth")
     fun getTwoTwoTwoTwoDivInNinth(): ResponseEntity<Any> {
         return ResponseEntity.ok(researchService.getTwoTwoTwoTwoDivInNinth())
+    }
+
+    @GetMapping("/competitions/{tournamentId}/csv")
+    fun getPolemicaRatingCsv(
+        @PathVariable("tournamentId") tournamentId: Long
+    ): String {
+        return "Место,Id,Ник игрока в приложении,score,award,winAsDonOrSher,firstNightKills,quessScore\n" +
+            polemicaTournamentService.getPolemicaTournamentResults(tournamentId).withIndex()
+                .joinToString(separator = "\n")
+                {
+                    "${it.index + 1},${it.value.id},${it.value.username},${
+                        String.format(
+                            "%.3f",
+                            it.value.sumScore()
+                        )
+                    },${
+                        String.format(
+                            "%.3f",
+                            it.value.sumAward()
+                        )
+                    },${it.value.winAsDonOrSher()},${it.value.firstNightKills()},${
+                        String.format(
+                            "%.3f",
+                            it.value.sumQuessScore()
+                        )
+                    }"
+                }
     }
 }
