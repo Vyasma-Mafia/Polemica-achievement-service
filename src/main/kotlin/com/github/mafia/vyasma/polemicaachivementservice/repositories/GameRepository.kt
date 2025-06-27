@@ -19,4 +19,6 @@ interface GameRepository : JpaRepository<Game, Long> {
     """
     )
     fun findAllWhereNotAchievement(achievement: String): List<Game>
+
+    fun countGamesByPointsNotNull(): Long
 }

@@ -43,10 +43,13 @@ class PlayerRatingService(
         .setBeta(DEFAULT_MU / 6.0)   // Стандартное значение
         .setTau(DEFAULT_MU / 300.0)  // Динамический фактор неопределенности
         .setKappa(0.001)      // Коэффициент демпфирования
+        .setBalance(true)
         .build()
 
     // Создаем оценщик качества матчей (для аналитики)
     private val qualityEvaluator = QualityEvaluator(config)
+
+    private val teamRatingAggregator = AverageTeamRatingAggregator(config)
 
     // Создаем арбитра с моделью Thurstone-Mosteller (наиболее близка к TrueSkill)
     private val adjudicator = Adjudicator<Long>(
@@ -98,6 +101,7 @@ class PlayerRatingService(
             }
         }
 
+
         val civilianPlayerResults = civilianTeam.mapNotNull { (playerId, points) ->
             civilianPlayers[playerId]?.let { player ->
                 // Вес с учетом типа игры
@@ -111,19 +115,23 @@ class PlayerRatingService(
             }
         }
 
+        val mafiaTeamAggregate = teamRatingAggregator.computeTeamRating(mafiaPlayerResults)
+
         // Создаем командные результаты
         val mafiaTeamResult = SimpleTeamResult(
             // Средние параметры команды (будут пересчитаны библиотекой)
-            mafiaPlayerResults.map { it.mu() }.average(),
-            mafiaPlayerResults.map { it.sigma() }.average(),
+            mafiaTeamAggregate.mu(),
+            mafiaTeamAggregate.sigma(),
             mafiaRank,
             mafiaPlayerResults
         )
 
+        val civilianTeamAggregate = teamRatingAggregator.computeTeamRating(civilianPlayerResults)
+
         val civilianTeamResult = SimpleTeamResult(
             // Средние параметры команды (будут пересчитаны библиотекой)
-            civilianPlayerResults.map { it.mu() }.average(),
-            civilianPlayerResults.map { it.sigma() }.average(),
+            civilianTeamAggregate.mu(),
+            civilianTeamAggregate.sigma(),
             civilianRank,
             civilianPlayerResults
         )
@@ -319,14 +327,7 @@ class PlayerRatingService(
         isCompetitive: Boolean
     ): Double {
         // Базовый коэффициент от 0.5 до 1.5 на основе баллов
-        val baseWeightFactor = when {
-            points < -0.2 -> 0.5
-            points < 0 -> 0.75
-            points == 0.0 -> 1.0
-            points <= 0.3 -> 1.25
-            points <= 0.7 -> 1.5
-            else -> 2.0
-        }
+        val baseWeightFactor = points + 1
 
         // Для победителей и проигравших
         val directedWeight = if (isWinner) {
@@ -341,17 +342,12 @@ class PlayerRatingService(
             player.gamesPlayed < 50 -> {
                 directedWeight * (player.gamesPlayed / 100.0)
             }
-            // Ветеран
-            player.gamesPlayed > 100 -> {
-                val experienceFactor = 1.0 + (player.gamesPlayed / 1000.0)
-                directedWeight * experienceFactor
-            }
             // Обычный случай
             else -> directedWeight
         }
 
         // Множитель для турнирных игр
-        val competitiveMultiplier = if (isCompetitive) 2.5 else 1.0
+        val competitiveMultiplier = if (isCompetitive) 2.5 else 0.5
 
         // Применяем множитель для турнирных игр
         return adjustedWeight * competitiveMultiplier
@@ -411,7 +407,10 @@ class PlayerRatingService(
         val redTeam = extractTeamWithPoints(game.data.players, points.players) { it.isRed() }
         val blackTeam = extractTeamWithPoints(game.data.players, points.players) { it.isBlack() }
         val isRedWin = game.data.result == PolemicaGameResult.RED_WIN
-        val competitive = game.gamePlace.competitionId != null || game.data.tags?.find { it.contains("League") } != null
+        var competitive = game.gamePlace.competitionId != null || game.data.tags?.find { it.contains("League") } != null
+        if (listOf(3618, 2575, 2997L).contains(game.gamePlace.competitionId)) {
+            competitive = false
+        }
 
         updateRatings(
             game.gameId,

@@ -65,7 +65,7 @@ class RatingService(
     }
 
     companion object {
-        private const val BATCH_SIZE = 50 // Размер порции обрабатываемых игр
+        private const val BATCH_SIZE = 200 // Размер порции обрабатываемых игр
     }
 
     fun clearRatingData() {

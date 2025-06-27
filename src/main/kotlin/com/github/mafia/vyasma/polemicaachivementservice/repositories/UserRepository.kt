@@ -25,4 +25,6 @@ interface UserRepository : JpaRepository<User, Long> {
 
     @Query("select avg(rating) from User")
     fun averageRating(): Double
+
+    fun countByRatingIsNotNull(): Long
 }
