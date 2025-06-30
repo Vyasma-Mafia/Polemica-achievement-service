@@ -17,7 +17,7 @@ class SeriesResultsController(
 ) {
     private val competitions = listOf(
         PolemicaClient.PolemicaCompetition(
-            3232,
+            3705,
             "PremierLeague",
             null,
             null,
@@ -53,7 +53,7 @@ class SeriesResultsController(
             null
         ),
         PolemicaClient.PolemicaCompetition(
-            3289,
+            3710,
             "LeagueOne",
             null,
             null,
