@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "jdbc:postgresql://postgres:mafia@localhost:5434/achievement"
+      ]
+    }
+  }
+}
