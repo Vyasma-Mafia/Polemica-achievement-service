@@ -23,6 +23,8 @@ interface UserRepository : JpaRepository<User, Long> {
 
     fun findByUsernameContainingIgnoreCase(username: String, pageable: Pageable): Page<User>
 
+    fun findByUsernameContainingIgnoreCase(username: String): List<User>
+
     @Query("select avg(rating) from User")
     fun averageRating(): Double
 

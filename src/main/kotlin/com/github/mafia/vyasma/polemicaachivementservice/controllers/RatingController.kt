@@ -13,6 +13,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameReposi
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.PlayerRatingHistoryRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.RecalibrationHistoryRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
+import com.github.mafia.vyasma.polemicaachivementservice.statistics.PlayerStatisticsService
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -34,7 +35,8 @@ class RatingController(
     private val gameRepository: GameRepository,
     private val playerRatingHistoryRepository: PlayerRatingHistoryRepository,
     private val recalibrationHistoryRepository: RecalibrationHistoryRepository,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val playerStatisticsService: PlayerStatisticsService
 ) {
 
     val logger = LoggerFactory.getLogger(this::class.java)
@@ -178,6 +180,13 @@ class RatingController(
                 println("Error preparing annotations: ${e.message}")
                 // В случае ошибки, добавляем пустые аннотации
                 model.addAttribute("chartAnnotations", emptyMap<String, Any>())
+            }
+
+            // Добавляем статистику по ролям
+            val playerStatistics = playerStatisticsService.getPlayerStatistics(userId)
+            if (playerStatistics != null) {
+                model.addAttribute("roleStatistics", playerStatistics.roleStatistics)
+                model.addAttribute("averagePoints", playerStatistics.averagePoints)
             }
 
             return "player-history-view"
