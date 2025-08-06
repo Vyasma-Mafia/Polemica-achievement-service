@@ -11,6 +11,11 @@ app:
     - 182 # ВП
     - 313 # Fox
   achievement-check-game-started-after: 2024-09-26T00:00:00
+  pair-statistics:
+    min-games-threshold: 10
+    top-partners-count: 5
+    cache-enabled: true
+    cache-ttl-minutes: 60
 
 
 spring:

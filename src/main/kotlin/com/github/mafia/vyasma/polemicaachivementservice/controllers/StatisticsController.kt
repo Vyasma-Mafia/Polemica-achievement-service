@@ -4,6 +4,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairGa
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairStatistics
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PlayerSearchResult
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PlayerStatistics
+import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.TopPartners
 import com.github.mafia.vyasma.polemicaachivementservice.statistics.MetricsService
 import com.github.mafia.vyasma.polemicaachivementservice.statistics.PairStatisticsService
 import com.github.mafia.vyasma.polemicaachivementservice.statistics.PlayerStatisticsService
@@ -180,6 +181,36 @@ class StatisticsController(
             ?: return ResponseEntity.notFound().build()
 
         return ResponseEntity.ok(metric)
+    }
+
+    @GetMapping("/players/{playerId}/top-partners")
+    @Operation(
+        summary = "Получить топ напарников игрока",
+        description = "Возвращает списки лучших и худших напарников игрока по проценту побед"
+    )
+    @ApiResponses(
+        ApiResponse(
+            responseCode = "200",
+            description = "Топ напарников",
+            content = [Content(schema = Schema(implementation = TopPartners::class))]
+        ),
+        ApiResponse(
+            responseCode = "404",
+            description = "Игрок не найден"
+        )
+    )
+    fun getTopPartners(
+        @Parameter(description = "ID игрока")
+        @PathVariable playerId: Long,
+        @Parameter(description = "Минимальное количество совместных игр")
+        @RequestParam(required = false) minGames: Int?,
+        @Parameter(description = "Количество напарников в каждой категории")
+        @RequestParam(required = false) topCount: Int?
+    ): ResponseEntity<TopPartners> {
+        val topPartners = pairStatisticsService.getTopPartners(playerId, minGames, topCount)
+            ?: return ResponseEntity.notFound().build()
+
+        return ResponseEntity.ok(topPartners)
     }
 
     @ExceptionHandler(Exception::class)

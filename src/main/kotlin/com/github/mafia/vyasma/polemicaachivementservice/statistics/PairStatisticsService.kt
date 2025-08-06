@@ -5,26 +5,32 @@ import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
 import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemica.library.utils.isRedWin
+import com.github.mafia.vyasma.polemicaachivementservice.configurations.PairStatisticsConfig
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.User
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.OppositeTeamStatistics
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairGamesResponse
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairStatistics
+import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PartnerStats
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PlayerInfo
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.SameTeamStatistics
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.TeamStatistics
+import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.TopPartners
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.VersusStatistics
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.UserRepository
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class PairStatisticsService(
     private val gameRepository: GameRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val config: PairStatisticsConfig
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -300,5 +306,121 @@ class PairStatisticsService(
         val firstPoints: Double,
         val secondPoints: Double,
         val hasPoints: Boolean
+    )
+
+    @Cacheable(
+        value = ["topPartners"],
+        key = "#playerId + ':' + #minGames + ':' + #topCount",
+        condition = "@pairStatisticsConfig.cacheEnabled"
+    )
+    fun getTopPartners(
+        playerId: Long,
+        minGames: Int? = null,
+        topCount: Int? = null
+    ): TopPartners? {
+        val effectiveMinGames = minGames ?: config.minGamesThreshold
+        val effectiveTopCount = topCount ?: config.topPartnersCount
+
+        val player = userRepository.findByIdOrNull(playerId) ?: return null
+        val allGames = findCommonGames(player, player) // Получаем все игры игрока
+
+        if (allGames.isEmpty()) {
+            return TopPartners(
+                playerId = playerId,
+                playerName = player.username,
+                bestPartners = emptyList(),
+                worstPartners = emptyList(),
+                calculatedAt = LocalDateTime.now(),
+                minGamesThreshold = effectiveMinGames,
+                totalPartnersAnalyzed = 0
+            )
+        }
+
+        // Мапа для хранения статистики по каждому напарнику
+        val partnerStatsMap = mutableMapOf<Long, MutablePartnerStats>()
+
+        // Анализируем каждую игру
+        allGames.forEach { game ->
+            val playerData = game.data.players?.find { it.player?.id == playerId } ?: return@forEach
+            val playerRole = playerData.role
+            val isPlayerRed = playerRole.isRed()
+            val isWin = (isPlayerRed && game.data.isRedWin()) || (!isPlayerRed && game.data.isBlackWin())
+
+            // Находим всех напарников в той же команде
+            game.data.players?.forEach { teammateData ->
+                val teammateId = teammateData.player?.id ?: return@forEach
+                if (teammateId == playerId) return@forEach
+
+                val teammateRole = teammateData.role
+                val isSameTeam = (isPlayerRed && teammateRole.isRed()) || (!isPlayerRed && teammateRole.isBlack())
+
+                if (isSameTeam) {
+                    val stats = partnerStatsMap.getOrPut(teammateId) {
+                        val user = userRepository.findByIdOrNull(teammateId)
+                        MutablePartnerStats(
+                            partnerId = teammateId,
+                            partnerName = user?.username ?: "Unknown",
+                            partnerRating = user?.rating
+                        )
+                    }
+
+                    stats.totalGames++
+                    if (isWin) stats.wins++ else stats.losses++
+                    stats.lastGameTogether = game.started ?: game.createdAt
+
+                    // Добавляем очки, если они есть
+                    game.points?.players?.find { it.position == teammateData.position.value }?.let {
+                        stats.totalPoints += it.points
+                    }
+                }
+            }
+        }
+
+        // Фильтруем по минимальному количеству игр и конвертируем в PartnerStats
+        val qualifiedPartners = partnerStatsMap.values
+            .filter { it.totalGames >= effectiveMinGames }
+            .map { mutableStats ->
+                PartnerStats(
+                    partnerId = mutableStats.partnerId,
+                    partnerName = mutableStats.partnerName,
+                    partnerRating = mutableStats.partnerRating,
+                    totalGames = mutableStats.totalGames,
+                    wins = mutableStats.wins,
+                    losses = mutableStats.losses,
+                    winRate = if (mutableStats.totalGames > 0) {
+                        (mutableStats.wins.toDouble() / mutableStats.totalGames) * 100
+                    } else 0.0,
+                    lastGameTogether = mutableStats.lastGameTogether,
+                    averagePointsTogether = if (mutableStats.totalGames > 0) {
+                        mutableStats.totalPoints / mutableStats.totalGames
+                    } else null
+                )
+            }
+
+        // Сортируем и выбираем топы
+        val sortedByWinRate = qualifiedPartners.sortedByDescending { it.winRate }
+        val bestPartners = sortedByWinRate.take(effectiveTopCount)
+        val worstPartners = sortedByWinRate.takeLast(effectiveTopCount).reversed()
+
+        return TopPartners(
+            playerId = playerId,
+            playerName = player.username,
+            bestPartners = bestPartners,
+            worstPartners = worstPartners,
+            calculatedAt = LocalDateTime.now(),
+            minGamesThreshold = effectiveMinGames,
+            totalPartnersAnalyzed = qualifiedPartners.size
+        )
+    }
+
+    private data class MutablePartnerStats(
+        val partnerId: Long,
+        val partnerName: String,
+        val partnerRating: Double?,
+        var totalGames: Int = 0,
+        var wins: Int = 0,
+        var losses: Int = 0,
+        var lastGameTogether: LocalDateTime? = null,
+        var totalPoints: Double = 0.0
     )
 }

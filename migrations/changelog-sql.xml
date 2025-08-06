@@ -36,4 +36,8 @@
     <changeSet id="add_competitive_to_rating" author="chulkov-alex">
         <sqlFile path="sql/add_competitive_to_rating.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="add_indexes_for_pair_statistics" author="chulkov-alex">
+        <sqlFile path="sql/add_indexes_for_pair_statistics.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>
