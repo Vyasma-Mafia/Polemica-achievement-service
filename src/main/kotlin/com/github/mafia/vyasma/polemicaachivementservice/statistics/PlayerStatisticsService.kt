@@ -29,7 +29,7 @@ class PlayerStatisticsService(
         val user = userRepository.findByIdOrNull(playerId) ?: return null
 
         // Получаем все игры игрока
-        val playerGames = gameRepository.findAll()
+        val playerGames = gameRepository.findAllByUserJoinedFromPlayerRatingHistory(user)
             .filter { game ->
                 game.data.players?.any { it.player?.id == playerId } ?: false
             }

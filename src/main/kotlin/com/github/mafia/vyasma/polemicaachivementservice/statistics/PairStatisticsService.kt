@@ -6,6 +6,7 @@ import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
 import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemica.library.utils.isRedWin
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.User
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.OppositeTeamStatistics
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairGame
 import com.github.mafia.vyasma.polemicaachivementservice.model.statistics.PairGamesResponse
@@ -32,7 +33,7 @@ class PairStatisticsService(
         val secondUser = userRepository.findByIdOrNull(secondPlayerId) ?: return null
 
         // Получаем все совместные игры
-        val commonGames = findCommonGames(firstPlayerId, secondPlayerId)
+        val commonGames = findCommonGames(firstUser, secondUser)
 
         if (commonGames.isEmpty()) {
             return PairStatistics(
@@ -101,7 +102,7 @@ class PairStatisticsService(
         val firstUser = userRepository.findByIdOrNull(firstPlayerId) ?: return null
         val secondUser = userRepository.findByIdOrNull(secondPlayerId) ?: return null
 
-        val allCommonGames = findCommonGames(firstPlayerId, secondPlayerId)
+        val allCommonGames = findCommonGames(firstUser, secondUser)
         val sortedGames = allCommonGames.sortedByDescending { it.started ?: it.createdAt }
 
         // Пагинация
@@ -167,10 +168,10 @@ class PairStatisticsService(
         )
     }
 
-    private fun findCommonGames(firstPlayerId: Long, secondPlayerId: Long): List<Game> {
-        return gameRepository.findAll().filter { game ->
-            val hasFirst = game.data.players?.any { it.player?.id == firstPlayerId } ?: false
-            val hasSecond = game.data.players?.any { it.player?.id == secondPlayerId } ?: false
+    private fun findCommonGames(firstUser: User, secondUser: User): List<Game> {
+        return gameRepository.findAllByUserJoinedFromPlayerRatingHistory(firstUser).filter { game ->
+            val hasFirst = game.data.players?.any { it.player?.id == firstUser.userId } ?: false
+            val hasSecond = game.data.players?.any { it.player?.id == secondUser.userId } ?: false
             hasFirst && hasSecond
         }
     }

@@ -26,4 +26,5 @@ interface PlayerRatingHistoryRepository : JpaRepository<PlayerRatingHistory, Lon
     fun findByPlayerOrderByPointsEarnedDesc(player: User): List<PlayerRatingHistory>
     fun findByPlayerOrderByPointsEarnedAsc(player: User): List<PlayerRatingHistory>
     fun findByPlayerAndCompetitive(player: User?, competitive: Boolean, ascending: Sort): List<PlayerRatingHistory>
+    fun findAllByPlayer(playerId: User): List<PlayerRatingHistory>
 }
