@@ -34,6 +34,120 @@
         #ratingHistoryChart {
             height: 300px;
         }
+
+        /* Стили для достижений */
+        .achievements-container {
+            min-height: 200px;
+        }
+
+        .achievement-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+
+        .achievement-item:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .achievement-item.completed {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #28a745;
+        }
+
+        .achievement-item.in-progress {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-color: #ffc107;
+        }
+
+        .achievement-name {
+            font-weight: 500;
+            margin-right: 10px;
+            flex-grow: 1;
+        }
+
+        .achievement-level {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-right: 8px;
+        }
+
+        .achievement-info {
+            position: relative;
+            cursor: help;
+            color: #6c757d;
+            font-size: 1.1em;
+        }
+
+        .achievement-tooltip {
+            position: absolute;
+            bottom: 125%;
+            right: 0;
+            transform: translateX(50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            max-width: 250px;
+            white-space: normal;
+            text-align: left;
+        }
+
+        .achievement-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            right: 12px;
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+
+        .achievement-info:hover .achievement-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .achievement-progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .achievement-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .achievement-stars {
+            color: #ffc107;
+            margin-right: 5px;
+        }
+
+        .no-achievements {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -134,6 +248,66 @@
                                 Средние очки: <span
                                     th:text="${#numbers.formatDecimal(entry.value.averagePoints, 1, 2)}">0.00</span>
                             </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Достижения игрока -->
+    <div class="row mb-4" th:if="${playerAchievements != null and playerAchievements.achievements.size() > 0}">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="bi bi-trophy text-warning"></i> Достижения
+            </h4>
+
+            <!-- Группировка достижений по категориям -->
+            <div class="row">
+                <!-- За мирных (RED) -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-shield-check"></i> За мирных
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="achievements-container" id="redAchievements">
+                                <!-- Достижения категории RED будут добавлены через JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- За мафию (BLACK) -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-mask"></i> За мафию
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="achievements-container" id="blackAchievements">
+                                <!-- Достижения категории BLACK будут добавлены через JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Общие (COMMON) -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-star"></i> Общие
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="achievements-container" id="commonAchievements">
+                                <!-- Достижения категории COMMON будут добавлены через JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -492,7 +666,7 @@
         });
     });
 </script>
-<script>
+<script th:inline="javascript">
     // Фильтрация таблицы по победам/поражениям
     document.getElementById('filter-wins').addEventListener('click', function () {
         const rows = document.querySelectorAll('#historyTable tbody tr');
@@ -550,6 +724,7 @@
     // Парная статистика
     let selectedPlayerId = null;
     const currentPlayerId = [[${player.userId}]];
+    const playerAchievements = [[${playerAchievements}]];
 
     // Поиск игроков
     document.getElementById('pairPlayerSearch').addEventListener('input', async function (e) {
@@ -756,9 +931,124 @@
         }
     }
 
+    // Функция для загрузки и отображения достижений игрока
+    function loadPlayerAchievements() {
+        console.log('loadPlayerAchievements');
+        console.log('Player achievements:', playerAchievements);
+
+        if (!playerAchievements || !playerAchievements.achievements || !playerAchievements.achievementsGains) {
+            console.log('No achievements data available');
+            return;
+        }
+
+        // Создаем карту достижений для быстрого поиска
+        const achievementsMap = {};
+        playerAchievements.achievements.forEach(achievement => {
+            achievementsMap[achievement.id] = achievement;
+        });
+
+        // Группируем достижения игрока по категориям
+        const achievementsByCategory = {
+            red: [],
+            black: [],
+            common: []
+        };
+
+        // Создаем карту полученных достижений
+        const gainsMap = {};
+        playerAchievements.achievementsGains.forEach(gain => {
+            gainsMap[gain.achievementId] = gain;
+        });
+
+        // Добавляем все достижения (полученные и неполученные)
+        playerAchievements.achievements.forEach(achievement => {
+            const gain = gainsMap[achievement.id];
+            const achievementData = {
+                ...achievement,
+                counter: gain ? (gain.achievementCounter || 0) : 0,
+                level: gain ? (gain.achievementLevel || 0) : 0
+            };
+            achievementsByCategory[achievement.category].push(achievementData);
+        });
+
+        // Отображаем достижения в каждой категории
+        displayAchievementsInCategory('redAchievements', achievementsByCategory.red, 'danger');
+        displayAchievementsInCategory('blackAchievements', achievementsByCategory.black, 'dark');
+        displayAchievementsInCategory('commonAchievements', achievementsByCategory.common, 'primary');
+    }
+
+    function displayAchievementsInCategory(containerId, achievements, colorClass) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (achievements.length === 0) {
+            container.innerHTML = '<div class="no-achievements">Нет достижений в этой категории</div>';
+            return;
+        }
+
+        // Сортируем достижения по order
+        achievements.sort((a, b) => (a.order || 100) - (b.order || 100));
+
+        let html = '';
+        achievements.forEach(achievement => {
+            const isCompleted = achievement.level > 0;
+            const isInProgress = achievement.counter > 0 && achievement.level === 0;
+
+            // Определяем текущий и следующий уровень
+            const currentLevelIndex = Math.max(0, achievement.level - 1);
+            const nextLevelIndex = achievement.level;
+            const currentLevelTarget = achievement.levels[currentLevelIndex] || 0;
+            const nextLevelTarget = achievement.levels[nextLevelIndex] || achievement.levels[achievement.levels.length - 1];
+
+            // Вычисляем прогресс
+            let progressPercent = 0;
+            if (isCompleted) {
+                progressPercent = 100;
+            } else if (nextLevelTarget > 0) {
+                progressPercent = Math.min(100, (achievement.counter / nextLevelTarget) * 100);
+            }
+
+            // Генерируем звездочки для уровня
+            let stars = '';
+            for (let i = 0; i < achievement.levels.length; i++) {
+                if (i < achievement.level) {
+                    stars += '★';
+                } else {
+                    stars += '☆';
+                }
+            }
+
+            const statusClass = isCompleted ? 'completed' : (isInProgress ? 'in-progress' : '');
+            const counterText = `${achievement.counter}`;
+
+            html += `
+                <div class="achievement-item ${statusClass}">
+                    <div style="width: 100%;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                            <div class="achievement-name">${achievement.name}</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="achievement-level">${counterText}</div>
+                                <div class="achievement-stars">${stars}</div>
+                                <div class="achievement-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <div class="achievement-tooltip">
+                                        ${achievement.description}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
     // Вызываем функцию при загрузке страницы
     document.addEventListener('DOMContentLoaded', function () {
         loadTopPartners();
+        loadPlayerAchievements();
     });
 </script>
 </body>

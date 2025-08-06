@@ -7,6 +7,7 @@ import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.getPlayerNumStarted
 import com.github.mafia.vyasma.polemica.library.utils.getVotingParticipants
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.RecalibrationHistory
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -36,7 +37,8 @@ class RatingController(
     private val playerRatingHistoryRepository: PlayerRatingHistoryRepository,
     private val recalibrationHistoryRepository: RecalibrationHistoryRepository,
     private val objectMapper: ObjectMapper,
-    private val playerStatisticsService: PlayerStatisticsService
+    private val playerStatisticsService: PlayerStatisticsService,
+    private val achievementService: AchievementService
 ) {
 
     val logger = LoggerFactory.getLogger(this::class.java)
@@ -187,6 +189,21 @@ class RatingController(
             if (playerStatistics != null) {
                 model.addAttribute("roleStatistics", playerStatistics.roleStatistics)
                 model.addAttribute("averagePoints", playerStatistics.averagePoints)
+            }
+
+            // Добавляем достижения игрока (за все время)
+            try {
+                val playerAchievements = achievementService.getAchievements(
+                    gainsUsernames = emptyList(),
+                    ids = listOf(userId),
+                    startDate = null // За все время
+                )
+                model.addAttribute("playerAchievements", playerAchievements)
+                logger.info("Loaded ${playerAchievements.achievementsGains.size} achievements for player $userId")
+            } catch (e: Exception) {
+                logger.error("Error loading achievements for player $userId: ${e.message}", e)
+                // Добавляем пустые достижения в случае ошибки
+                model.addAttribute("playerAchievements", null)
             }
 
             return "player-history-view"
