@@ -10,6 +10,8 @@ import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchPairSt
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchService
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchVotedByFourRedVotesAnswer
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -83,8 +85,8 @@ class ResearchController(
     @GetMapping("/competitions/{tournamentId}/csv")
     fun getPolemicaRatingCsv(
         @PathVariable("tournamentId") tournamentId: Long
-    ): String {
-        return "Место,Id,Ник игрока в приложении,score,award,winAsDonOrSher,firstNightKills,quessScore\n" +
+    ): ResponseEntity<String> {
+        val csvContent = "Место,Id,Ник игрока в приложении,score,award,winAsDonOrSher,firstNightKills,quessScore\n" +
             polemicaTournamentService.getPolemicaTournamentResults(tournamentId).withIndex()
                 .joinToString(separator = "\n")
                 {
@@ -105,5 +107,13 @@ class ResearchController(
                         )
                     }"
                 }
+
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.TEXT_PLAIN
+        headers.set("Content-Disposition", "inline; filename=\"tournament_${tournamentId}_results.csv\"")
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(csvContent)
     }
 }
