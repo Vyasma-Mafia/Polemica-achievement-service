@@ -10,7 +10,7 @@ app:
     - 72 # Polemica Spb
     - 182 # ВП
     - 313 # Fox
-  achievement-check-game-started-after: 2024-09-26T00:00:00
+  achievement-check-game-started-after: 2000-01-01T00:00:00
   pair-statistics:
     min-games-threshold: 10
     top-partners-count: 5
