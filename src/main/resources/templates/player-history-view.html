@@ -157,6 +157,99 @@
         .collapse-toggle.collapsed {
             transform: rotate(-90deg);
         }
+
+        /* Стили для слайдера минимальных игр */
+        .min-games-slider {
+            width: 150px;
+            height: 8px;
+        }
+
+        .min-games-value {
+            min-width: 35px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(13, 110, 253, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(13, 110, 253, 0.2);
+        }
+
+        .slider-label {
+            font-size: 0.875rem;
+            color: #495057;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Улучшенные стили для range input */
+        .form-range {
+            height: 8px;
+            background: linear-gradient(to right, #e9ecef 0%, #e9ecef 100%);
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .form-range::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(13, 110, 253, 0.4);
+        }
+
+        .form-range::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .form-range::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(13, 110, 253, 0.4);
+        }
+
+        .form-range::-webkit-slider-track {
+            height: 8px;
+            background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            border-radius: 4px;
+        }
+
+        .form-range::-moz-range-track {
+            height: 8px;
+            background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            border-radius: 4px;
+            border: none;
+        }
+
+        /* Анимация для значения слайдера */
+        .min-games-value {
+            transition: all 0.2s ease;
+        }
+
+        .min-games-value:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -164,6 +257,14 @@
 <!-- Шапка с информацией об игроке -->
 <div class="player-header">
     <div class="container">
+        <!-- Кнопка навигации к рейтингу -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a class="btn btn-light btn-sm" href="/rating">
+                    <i class="bi bi-arrow-left"></i> К рейтингу
+                </a>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-3 text-center text-md-start">
                 <!-- Аватар из первой буквы имени пользователя -->
@@ -200,11 +301,11 @@
     <div class="card mb-5 shadow-sm">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <button aria-controls="ratingHistoryCollapse" aria-expanded="true"
+                <button aria-controls="ratingHistoryCollapse" aria-expanded="false"
                         class="btn btn-link text-decoration-none p-0 text-start"
                         data-bs-target="#ratingHistoryCollapse" data-bs-toggle="collapse"
                         type="button">
-                    <i class="bi bi-chevron-down me-2 collapse-toggle"></i>История рейтинга
+                    <i class="bi bi-chevron-down me-2 collapse-toggle collapsed"></i>История рейтинга
                 </button>
             </h5>
             <div class="btn-group btn-group-sm">
@@ -222,7 +323,7 @@
                         th:href="@{'/rating/player/' + ${player.userId}(timeRange='week')}">Неделя</a>
             </div>
         </div>
-        <div class="collapse show" id="ratingHistoryCollapse">
+        <div class="collapse" id="ratingHistoryCollapse">
             <div class="card-body">
             <div id="chartContainer" style="height: 300px">
                 <canvas id="ratingHistoryChart"></canvas>
@@ -240,14 +341,14 @@
     <div class="card mb-4 shadow-sm" th:if="${roleStatistics}">
         <div class="card-header bg-light">
             <h5 class="mb-0">
-                <button aria-controls="roleStatsCollapse" aria-expanded="true"
+                <button aria-controls="roleStatsCollapse" aria-expanded="false"
                         class="btn btn-link text-decoration-none p-0 text-start"
                         data-bs-target="#roleStatsCollapse" data-bs-toggle="collapse" type="button">
-                    <i class="bi bi-chevron-down me-2 collapse-toggle"></i>Статистика по ролям
+                    <i class="bi bi-chevron-down me-2 collapse-toggle collapsed"></i>Статистика по ролям
                 </button>
             </h5>
         </div>
-        <div class="collapse show" id="roleStatsCollapse">
+        <div class="collapse" id="roleStatsCollapse">
             <div class="card-body">
             <div class="row">
                 <div class="col-md-3 mb-3" th:each="entry : ${roleStatistics}">
@@ -288,7 +389,7 @@
             th:if="${playerAchievements != null and playerAchievements.achievements.size() > 0}">
         <div class="card-header bg-light">
             <h5 class="mb-0">
-                <button aria-controls="achievementsCollapse" aria-expanded="true"
+                <button aria-controls="achievementsCollapse" aria-expanded="false"
                         class="btn btn-link text-decoration-none p-0 text-start"
                         data-bs-target="#achievementsCollapse" data-bs-toggle="collapse"
                         type="button">
@@ -297,7 +398,7 @@
                 </button>
             </h5>
         </div>
-        <div class="collapse show" id="achievementsCollapse">
+        <div class="collapse" id="achievementsCollapse">
             <div class="card-body">
                 <!-- Группировка достижений по категориям -->
             <div class="row">
@@ -356,13 +457,26 @@
     <!-- Топ напарники -->
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <button aria-controls="partnersCollapse" aria-expanded="false"
-                        class="btn btn-link text-decoration-none p-0 text-start"
-                        data-bs-target="#partnersCollapse" data-bs-toggle="collapse" type="button">
-                    <i class="bi bi-chevron-down me-2 collapse-toggle collapsed"></i>Лучшие и худшие напарники
-                </button>
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <button aria-controls="partnersCollapse" aria-expanded="false"
+                            class="btn btn-link text-decoration-none p-0 text-start"
+                            data-bs-target="#partnersCollapse" data-bs-toggle="collapse" type="button">
+                        <i class="bi bi-chevron-down me-2 collapse-toggle collapsed"></i>Лучшие и худшие напарники
+                    </button>
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="slider-container">
+                        <label class="slider-label" for="minGamesSlider">
+                            <i class="bi bi-sliders"></i> Минимум игр:
+                        </label>
+                        <input class="form-range min-games-slider" id="minGamesSlider" max="50"
+                                min="1" type="range" value="10">
+                        <span class="badge bg-primary min-games-value" id="minGamesValue">10</span>
+                        <small class="text-muted">игр</small>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="collapse" id="partnersCollapse">
             <div class="card-body">
@@ -587,8 +701,6 @@
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Добавляем плагин аннотаций, который используется в настройках -->
@@ -895,11 +1007,15 @@
     });
 
     // Загрузка топ напарников при загрузке страницы
-    async function loadTopPartners() {
+    async function loadTopPartners(minGames = 10) {
         const container = document.getElementById('topPartnersContainer');
 
+        // Показываем индикатор загрузки
+        container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div></div>';
+
         try {
-            const response = await fetch(`/api/players/${currentPlayerId}/top-partners`);
+            const url = `/api/players/${currentPlayerId}/top-partners?minGames=${minGames}`;
+            const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to load top partners');
             }
@@ -1104,13 +1220,57 @@
         container.innerHTML = html;
     }
 
+    // Debounce функция для оптимизации запросов
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Обработчик изменения слайдера с debounce
+    const debouncedLoadTopPartners = debounce((minGames) => {
+        loadTopPartners(minGames);
+    }, 300);
+
     // Вызываем функцию при загрузке страницы
     document.addEventListener('DOMContentLoaded', function () {
-        loadTopPartners();
+        // Инициализируем слайдер сначала
+        const minGamesSlider = document.getElementById('minGamesSlider');
+        const minGamesValue = document.getElementById('minGamesValue');
+
+        // Получаем начальное значение слайдера
+        const initialMinGames = minGamesSlider ? parseInt(minGamesSlider.value) : 10;
+
+        // Загружаем топ напарников с правильным начальным значением
+        loadTopPartners(initialMinGames);
         loadPlayerAchievements();
 
-        // Инициализируем обработчики для сворачиваемых разделов
-        initializeCollapseHandlers();
+        // Инициализируем обработчики для сворачиваемых разделов после небольшой задержки
+        // чтобы убедиться, что Bootstrap полностью загружен
+        setTimeout(function () {
+            initializeCollapseHandlers();
+        }, 100);
+
+        if (minGamesSlider && minGamesValue) {
+            // Убеждаемся, что отображаемое значение соответствует слайдеру
+            minGamesValue.textContent = minGamesSlider.value;
+
+            // Обновляем отображение значения при изменении слайдера
+            minGamesSlider.addEventListener('input', function () {
+                minGamesValue.textContent = this.value;
+            });
+
+            // Загружаем новые данные при изменении слайдера
+            minGamesSlider.addEventListener('input', function () {
+                debouncedLoadTopPartners(parseInt(this.value));
+            });
+        }
     });
 
     // Функция для инициализации обработчиков сворачивания
@@ -1132,14 +1292,24 @@
                     chevronIcon.classList.add('collapsed');
                 }
 
-                // Обработчики событий Bootstrap collapse
-                collapseElement.addEventListener('show.bs.collapse', function () {
-                    chevronIcon.classList.remove('collapsed');
-                });
+                // Удаляем старые обработчики событий, если они есть
+                collapseElement.removeEventListener('show.bs.collapse', handleShow);
+                collapseElement.removeEventListener('hide.bs.collapse', handleHide);
 
-                collapseElement.addEventListener('hide.bs.collapse', function () {
+                // Создаем функции-обработчики
+                function handleShow() {
+                    chevronIcon.classList.remove('collapsed');
+                    toggleButton.setAttribute('aria-expanded', 'true');
+                }
+
+                function handleHide() {
                     chevronIcon.classList.add('collapsed');
-                });
+                    toggleButton.setAttribute('aria-expanded', 'false');
+                }
+
+                // Добавляем обработчики событий Bootstrap collapse
+                collapseElement.addEventListener('show.bs.collapse', handleShow);
+                collapseElement.addEventListener('hide.bs.collapse', handleHide);
             }
         });
     }
