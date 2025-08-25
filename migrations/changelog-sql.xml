@@ -40,4 +40,8 @@
     <changeSet id="add_indexes_for_pair_statistics" author="chulkov-alex">
         <sqlFile path="sql/add_indexes_for_pair_statistics.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="add_tournaments_table" author="chulkov-alex">
+        <sqlFile path="sql/add_tournaments_table.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>

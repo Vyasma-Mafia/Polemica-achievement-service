@@ -1,11 +1,19 @@
 package com.github.mafia.vyasma.polemicaachivementservice.controllers
 
 import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
+import com.github.mafia.vyasma.polemicaachivementservice.model.dto.AddTournamentRequest
+import com.github.mafia.vyasma.polemicaachivementservice.model.dto.TournamentResponse
 import com.github.mafia.vyasma.polemicaachivementservice.rating.GamePointsService
+import com.github.mafia.vyasma.polemicaachivementservice.services.TournamentService
+import org.slf4j.LoggerFactory
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
@@ -13,91 +21,52 @@ import org.springframework.web.bind.annotation.ResponseBody
 @RequestMapping("/clubs/polemicaspb/leagues")
 class SeriesResultsController(
     private val polemicaClient: PolemicaClient,
-    private val gamePointsService: GamePointsService
+    private val gamePointsService: GamePointsService,
+    private val tournamentService: TournamentService
 ) {
-    private val competitions = listOf(
-        PolemicaClient.PolemicaCompetition(
-            3705,
-            "PremierLeague",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        ),
-        PolemicaClient.PolemicaCompetition(
-            3684,
-            "ChampionshipLeague",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        ),
-        PolemicaClient.PolemicaCompetition(
-            3710,
-            "LeagueOne",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
-    )
+    private val logger = LoggerFactory.getLogger(SeriesResultsController::class.java)
 
     @GetMapping
     fun getSeriesResultsPage(model: Model): String {
         val tournamentsData = mutableListOf<TournamentSeriesData>()
+        val tournaments = tournamentService.getActiveTournaments()
 
         // Для каждого турнира получаем игры и серии
-        for (competition in competitions) {
-            val games = polemicaClient.getGamesFromCompetition(competition.id)
-            val seriesMap = games.groupBy { (it.num.toInt() - 1) / 4 + 1 }
+        for (tournament in tournaments) {
+            try {
+                val games = polemicaClient.getGamesFromCompetition(tournament.id)
+                val seriesMap = games.groupBy { (it.num.toInt() - 1) / tournament.gamesPerSeries + 1 }
 
-            // Последняя серия
-            val lastSeriesNumber = seriesMap.keys.maxOrNull() ?: 1
+                // Последняя серия
+                val lastSeriesNumber = seriesMap.keys.maxOrNull() ?: 1
 
-            // Получаем результаты последней серии
-            val lastSeriesResults = getSeriesResults(competition.id, lastSeriesNumber, seriesMap)
+                // Получаем результаты последней серии
+                val lastSeriesResults = getSeriesResults(tournament.id, lastSeriesNumber, seriesMap)
 
-            tournamentsData.add(
-                TournamentSeriesData(
-                    competition = competition,
-                    seriesNumbers = seriesMap.keys.sorted(),
-                    currentSeries = lastSeriesNumber,
-                    playerPoints = lastSeriesResults
+                // Создаем PolemicaCompetition для совместимости с существующим шаблоном
+                val competition = PolemicaClient.PolemicaCompetition(
+                    tournament.id,
+                    tournament.name,
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null
                 )
-            )
+
+                tournamentsData.add(
+                    TournamentSeriesData(
+                        competition = competition,
+                        seriesNumbers = seriesMap.keys.sorted(),
+                        currentSeries = lastSeriesNumber,
+                        playerPoints = lastSeriesResults,
+                        gamesPerSeries = tournament.gamesPerSeries
+                    )
+                )
+            } catch (e: Exception) {
+                logger.error("Ошибка при загрузке данных турнира ${tournament.name} (ID: ${tournament.id}): ${e.message}")
+                // Пропускаем турнир с ошибкой, но продолжаем обработку остальных
+            }
         }
 
         model.addAttribute("tournamentsData", tournamentsData)
+        model.addAttribute("activeTournaments", tournamentService.getActiveTournamentsAsResponse())
         return "series-results"
     }
 
@@ -107,9 +76,46 @@ class SeriesResultsController(
         @PathVariable competitionId: Long,
         @PathVariable seriesNumber: Int
     ): List<Pair<String, Double>> {
+        val tournament = tournamentService.getTournamentById(competitionId)
+            ?: throw IllegalArgumentException("Турнир с ID $competitionId не найден")
+        
         val games = polemicaClient.getGamesFromCompetition(competitionId)
-        val seriesMap = games.groupBy { (it.num.toInt() - 1) / 4 + 1 }
+        val seriesMap = games.groupBy { (it.num.toInt() - 1) / tournament.gamesPerSeries + 1 }
         return getSeriesResults(competitionId, seriesNumber, seriesMap)
+    }
+
+    @PostMapping("/add-tournament")
+    @ResponseBody
+    fun addTournament(@RequestBody request: AddTournamentRequest): ResponseEntity<TournamentResponse> {
+        return try {
+            val tournament = tournamentService.addTournament(request)
+            ResponseEntity.ok(tournament)
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().build()
+        } catch (e: Exception) {
+            logger.error("Ошибка при добавлении турнира: ${e.message}", e)
+            ResponseEntity.internalServerError().build()
+        }
+    }
+
+    @DeleteMapping("/remove-tournament/{id}")
+    @ResponseBody
+    fun removeTournament(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
+        return try {
+            tournamentService.removeTournament(id)
+            ResponseEntity.ok(mapOf("message" to "Турнир успешно удален"))
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(mapOf("error" to e.message!!))
+        } catch (e: Exception) {
+            logger.error("Ошибка при удалении турнира: ${e.message}", e)
+            ResponseEntity.internalServerError().body(mapOf("error" to "Внутренняя ошибка сервера"))
+        }
+    }
+
+    @GetMapping("/tournaments")
+    @ResponseBody
+    fun getActiveTournaments(): List<TournamentResponse> {
+        return tournamentService.getActiveTournamentsAsResponse()
     }
 
     private fun getSeriesResults(
@@ -153,5 +159,6 @@ data class TournamentSeriesData(
     val competition: PolemicaClient.PolemicaCompetition,
     val seriesNumbers: List<Int>,
     val currentSeries: Int,
-    val playerPoints: List<Pair<String, Double>>
+    val playerPoints: List<Pair<String, Double>>,
+    val gamesPerSeries: Int = 4
 )
