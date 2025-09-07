@@ -9,6 +9,7 @@ import com.github.mafia.vyasma.polemicaachivementservice.rating.PolemicaTourname
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchPairStat
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchService
 import com.github.mafia.vyasma.polemicaachivementservice.research.ResearchVotedByFourRedVotesAnswer
+import java.nio.charset.StandardCharsets.UTF_8
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -109,8 +110,8 @@ class ResearchController(
                 }
 
         val headers = HttpHeaders()
-        headers.contentType = MediaType.TEXT_PLAIN
-        headers.set("Content-Disposition", "inline; filename=\"tournament_${tournamentId}_results.csv\"")
+        headers.contentType = MediaType("text", "csv", Charsets.UTF_8)
+        headers.set("Content-Disposition", "inline; filename=\"results.csv\"")
 
         return ResponseEntity.ok()
             .headers(headers)
