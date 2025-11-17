@@ -34,9 +34,39 @@ class TournamentService(
     }
 
     fun addTournament(request: AddTournamentRequest): TournamentResponse {
-        // Проверяем, что турнир с таким ID не существует
-        if (tournamentRepository.existsById(request.id)) {
-            throw IllegalArgumentException("Турнир с ID ${request.id} уже существует")
+        // Валидируем входные данные
+        if (request.name.isBlank()) {
+            throw IllegalArgumentException("Название турнира не может быть пустым")
+        }
+        if (request.gamesPerSeries < 1) {
+            throw IllegalArgumentException("Количество игр в серии должно быть больше 0")
+        }
+
+        // Проверяем, существует ли турнир с таким ID
+        val existingTournament = tournamentRepository.findById(request.id).orElse(null)
+
+        if (existingTournament != null) {
+            // Если турнир уже активен, выбрасываем ошибку
+            if (existingTournament.active) {
+                throw IllegalArgumentException("Турнир с ID ${request.id} уже существует")
+            }
+
+            // Если турнир существует, но неактивен - реактивируем его
+            val reactivatedTournament = existingTournament.copy(
+                name = request.name,
+                gamesPerSeries = request.gamesPerSeries,
+                active = true
+            )
+
+            val savedTournament = tournamentRepository.save(reactivatedTournament)
+            logger.info("Турнир ${savedTournament.name} (ID: ${savedTournament.id}) реактивирован")
+
+            return TournamentResponse(
+                id = savedTournament.id,
+                name = savedTournament.name,
+                gamesPerSeries = savedTournament.gamesPerSeries,
+                active = savedTournament.active
+            )
         }
 
         // Валидируем, что турнир существует в Polemica (опционально)
@@ -48,14 +78,7 @@ class TournamentService(
             // Не блокируем добавление, так как турнир может быть новым
         }
 
-        // Валидируем входные данные
-        if (request.name.isBlank()) {
-            throw IllegalArgumentException("Название турнира не может быть пустым")
-        }
-        if (request.gamesPerSeries < 1) {
-            throw IllegalArgumentException("Количество игр в серии должно быть больше 0")
-        }
-
+        // Создаем новый турнир
         val tournament = Tournament(
             id = request.id,
             name = request.name,

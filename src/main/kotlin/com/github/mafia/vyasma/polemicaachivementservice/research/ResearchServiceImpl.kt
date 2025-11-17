@@ -364,14 +364,21 @@ class ResearchServiceImpl(
         // CSV Header
         csvBuilder.appendLine(
             listOf(
-                "Ссылка", "Username", "Рейтинг", "Количество игр (всего)",
-                "Количество игр (актуальный скоринг)",
+                "Ссылка", "Username", "Рейтинг", "Количество игр",
+                "Игр Мирный", "Игр Мафия", "Игр Дон", "Игр Шериф",
                 "WinRate Мирный", "WinRate Мафия", "WinRate Дон", "WinRate Шериф",
-                "Средний доп Мирный", "Средний доп Мафия", "Средний доп Дон", "Средний доп Шериф"
+                "Средний доп Мирный", "Средний доп Мафия", "Средний доп Дон", "Средний доп Шериф",
+                "ПУ"
             ).joinToString(",")
         )
 
-        val allGames = gameRepository.findAll().filter { it.data.scoringType == 1 } // Загружаем все игры один раз
+        val allGames = gameRepository.findAll()
+            .filter { it.data.scoringType == 1 }
+            .filter { it.data.scoringVersion == "3.0" }
+            .filter {
+                listOf(3249, 3232, 3705, 3684, 4036, 3289).contains(it.gamePlace.competitionId?.toInt())
+                    || it.data.tags?.intersect(listOf("PremierLeague", "ChampionshipLeague"))?.isNotEmpty() ?: false
+            }
 
 
         for (url in profileUrls) {
@@ -392,10 +399,10 @@ class ResearchServiceImpl(
             val userEntity = userRepository.findByIdOrNull(playerId) ?: continue
             val username = userEntity.username
             val rating = userEntity.rating ?: 0.0
-            val totalGamesPlayedByUser = userEntity.gamesPlayed
 
             val roleStats = Role.entries.associateWith { RoleStatSummary() }.toMutableMap()
             var gamesWithActualScoring = 0
+            var firstKilledCounter = 0
 
             // Фильтруем игры для текущего игрока
             val playerGames = allGames.filter { game ->
@@ -424,6 +431,10 @@ class ResearchServiceImpl(
                     gamesWithActualScoring++
                 }
 
+                if (gameData.getFirstKilled() == playerInGame.position) {
+                    firstKilledCounter++
+                }
+
                 try {
                     val points = gameEntity.points?.players?.find { it.position == playerInGame.position.value }?.points
                     if (points != null) {
@@ -448,8 +459,11 @@ class ResearchServiceImpl(
                     url,
                     username,
                     rating.format(),
-                    totalGamesPlayedByUser.toString(), // Используем данные из User entity для общего числа игр
                     gamesWithActualScoring.toString(),
+                    roleStats[Role.PEACE]?.gamesPlayed ?: "0",
+                    roleStats[Role.MAFIA]?.gamesPlayed ?: "0",
+                    roleStats[Role.DON]?.gamesPlayed ?: "0",
+                    roleStats[Role.SHERIFF]?.gamesPlayed ?: "0",
                     roleStats[Role.PEACE]?.winRate?.format() ?: "0.00",
                     roleStats[Role.MAFIA]?.winRate?.format() ?: "0.00",
                     roleStats[Role.DON]?.winRate?.format() ?: "0.00",
@@ -457,7 +471,8 @@ class ResearchServiceImpl(
                     roleStats[Role.PEACE]?.averageAdditionalPoints?.format() ?: "0.00",
                     roleStats[Role.MAFIA]?.averageAdditionalPoints?.format() ?: "0.00",
                     roleStats[Role.DON]?.averageAdditionalPoints?.format() ?: "0.00",
-                    roleStats[Role.SHERIFF]?.averageAdditionalPoints?.format() ?: "0.00"
+                    roleStats[Role.SHERIFF]?.averageAdditionalPoints?.format() ?: "0.00",
+                    firstKilledCounter
                 ).joinToString(",")
             )
         }

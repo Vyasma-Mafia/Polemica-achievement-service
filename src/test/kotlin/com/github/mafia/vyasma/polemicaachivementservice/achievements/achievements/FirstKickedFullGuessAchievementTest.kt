@@ -1,7 +1,7 @@
 package com.github.mafia.vyasma.polemicaachivementservice.achievements.achievements
 
 import com.github.mafia.vyasma.polemica.library.model.game.Position
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 
 class FirstKickedFullGuessAchievementTest {
     @Test
