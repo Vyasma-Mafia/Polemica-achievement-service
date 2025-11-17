@@ -150,7 +150,7 @@ class TopPartnersServiceTest {
         assertEquals("Player1", result?.playerName)
 
         // Best partners
-        assertEquals(1, result?.bestPartners?.size)
+        assertEquals(2, result?.bestPartners?.size)
         val bestPartner = result?.bestPartners?.first()
         assertEquals(2L, bestPartner?.partnerId)
         assertEquals("Player2", bestPartner?.partnerName)
@@ -159,7 +159,7 @@ class TopPartnersServiceTest {
         assertEquals(100.0, bestPartner?.winRate)
 
         // Worst partners
-        assertEquals(1, result?.worstPartners?.size)
+        assertEquals(2, result?.worstPartners?.size)
         val worstPartner = result?.worstPartners?.first()
         assertEquals(3L, worstPartner?.partnerId)
         assertEquals("Player3", worstPartner?.partnerName)
