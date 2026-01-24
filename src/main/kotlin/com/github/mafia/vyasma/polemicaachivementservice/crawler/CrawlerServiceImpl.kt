@@ -4,12 +4,18 @@ import com.github.mafia.vyasma.polemica.library.client.PolemicaClient
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PolemicaGamePlace
+import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.ProcessedTournamentId
 import com.github.mafia.vyasma.polemicaachivementservice.rating.RatingService
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
+import com.github.mafia.vyasma.polemicaachivementservice.repositories.ProcessedTournamentIdRepository
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 private const val GET_LIMIT = 100L
+
+private const val SPB = "Санкт-Петербург"
 
 @Service
 class CrawlerServiceImpl(
@@ -17,13 +23,19 @@ class CrawlerServiceImpl(
     val gameRepository: GameRepository,
     val crawlClubs: MutableList<Long>,
     val achievementService: AchievementService,
-    val ratingService: RatingService
+    val ratingService: RatingService,
+    val processedTournamentIdRepository: ProcessedTournamentIdRepository,
+    @Value("\${app.crawl-competitions-by-id-range.enable:false}")
+    val crawlCompetitionsByIdRangeEnabled: Boolean
 ) : CrawlerService {
     private val logger = LoggerFactory.getLogger(CrawlerServiceImpl::class.java.name)
 
     override fun crawl(withStopOnDb: Boolean) {
         crawlClubs.forEach { crawlClub(it, withStopOnDb) }
         crawlCompetitions(withStopOnDb)
+        if (crawlCompetitionsByIdRangeEnabled) {
+            crawlCompetitionsByIdRange(withStopOnDb)
+        }
         achievementService.checkAchievements()
         ratingService.crawlGames()
     }
@@ -38,7 +50,7 @@ class CrawlerServiceImpl(
     fun crawlCompetitions(withStopOnDb: Boolean) {
         logger.info("Crawling competitions started")
         val competitions = polemicaClient.getCompetitions()
-        competitions.filter { it.city == "Санкт-Петербург" }.forEach { crawlCompetition(it, withStopOnDb) }
+        competitions.filter { it.city == SPB }.forEach { crawlCompetition(it, withStopOnDb) }
         logger.info("Crawling competitions finished")
     }
 
@@ -101,5 +113,86 @@ class CrawlerServiceImpl(
             offset += GET_LIMIT
         } while ((!withStopOnDb && games.isNotEmpty()) || gamesInBd.size < games.size)
         logger.info("Crawl club $clubId finished")
+    }
+
+    override fun crawlCompetitionsByIdRange(withStopOnDb: Boolean) {
+        logger.info("Crawling competitions by ID range started")
+        try {
+            // Get minimum ID from currently visible competitions
+            val competitions = polemicaClient.getCompetitions()
+            val minCompetitionId = competitions.minOfOrNull { it.id } ?: Long.MAX_VALUE
+
+            if (minCompetitionId == Long.MAX_VALUE) {
+                logger.warn("No competitions found, skipping ID range crawl")
+                return
+            }
+
+            logger.info("Processing tournament IDs from 1 to $minCompetitionId")
+            var processedCount = 0
+            var skippedCount = 0
+            var errorCount = 0
+
+            for (tournamentId in 1L until minCompetitionId) {
+                try {
+                    // Check if already processed
+                    if (processedTournamentIdRepository.existsById(tournamentId)) {
+                        skippedCount++
+                        continue
+                    }
+                    
+                    // Try to fetch games from this tournament ID
+                    val games = try {
+                        val competition = polemicaClient.getCompetition(tournamentId)
+                        if (competition?.city != SPB) {
+                            throw IllegalArgumentException()
+                        }
+                        polemicaClient.getGamesFromCompetition(tournamentId)
+                    } catch (e: Exception) {
+                        // Tournament doesn't exist or is not accessible
+                        logger.debug("Tournament ID $tournamentId does not exist or is not accessible: ${e.message}")
+                        // Mark as processed even if it doesn't exist to avoid retrying
+                        processedTournamentIdRepository.save(ProcessedTournamentId(tournamentId, LocalDateTime.now()))
+                        errorCount++
+                        continue
+                    }
+
+                    // If games exist, process the competition
+                    if (games.isNotEmpty()) {
+                        logger.info("Found tournament ID $tournamentId with ${games.size} games")
+                        // Create a minimal competition object for compatibility with crawlCompetition
+                        val competition = PolemicaClient.PolemicaCompetition(
+                            tournamentId,
+                            "Tournament $tournamentId",
+                            null, null, null, null, null, null, null, null, null, null, null, null, null, null
+                        )
+                        crawlCompetition(competition, withStopOnDb)
+                        processedCount++
+                    }
+
+                    // Mark as processed
+                    processedTournamentIdRepository.save(ProcessedTournamentId(tournamentId, LocalDateTime.now()))
+                } catch (e: Exception) {
+                    logger.error("Error processing tournament ID $tournamentId", e)
+                    errorCount++
+                    // Mark as processed to avoid infinite retries on persistent errors
+                    try {
+                        if (!processedTournamentIdRepository.existsById(tournamentId)) {
+                            processedTournamentIdRepository.save(
+                                ProcessedTournamentId(
+                                    tournamentId,
+                                    LocalDateTime.now()
+                                )
+                            )
+                        }
+                    } catch (saveException: Exception) {
+                        logger.error("Error saving processed tournament ID $tournamentId", saveException)
+                    }
+                }
+            }
+
+            logger.info("Crawling competitions by ID range finished. Processed: $processedCount, Skipped: $skippedCount, Errors: $errorCount")
+        } catch (e: Exception) {
+            logger.error("Error during ID range crawling", e)
+        }
     }
 }

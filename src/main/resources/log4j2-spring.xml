@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <!-- Default pattern for dev environment -->
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-15.15t] %highlight{%-5level}{ERROR=red, WARN=yellow,
+            INFO=green, DEBUG=cyan, TRACE=white} %-36.36logger{1.} - %msg%n
+        </Property>
+    </Properties>
+
+    <!-- Console appender for dev/default environment -->
+    <SpringProfile name="dev,default">
+        <Appenders>
+            <Console name="Console" target="SYSTEM_OUT">
+                <PatternLayout pattern="${LOG_PATTERN}"/>
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Root level="info">
+                <AppenderRef ref="Console"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+    <!-- Console appender for prod environment with JSON format -->
+    <SpringProfile name="prod">
+        <Appenders>
+            <Console name="Console" target="SYSTEM_OUT">
+                <JsonLayout compact="true" eventEol="true" includeStacktrace="true">
+                    <KeyValuePair key="timestamp" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}"/>
+                    <KeyValuePair key="level" value="$${level}"/>
+                    <KeyValuePair key="thread" value="$${thread}"/>
+                    <KeyValuePair key="logger" value="$${logger}"/>
+                    <KeyValuePair key="message" value="$${message}"/>
+                </JsonLayout>
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Root level="info">
+                <AppenderRef ref="Console"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+</Configuration>

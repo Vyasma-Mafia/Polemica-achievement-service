@@ -16,6 +16,8 @@ app:
     top-partners-count: 5
     cache-enabled: true
     cache-ttl-minutes: 60
+  crawl-competitions-by-id-range:
+    enable: true
 
 
 spring:
@@ -46,8 +48,15 @@ spring:
 server:
   port: 8080
 
-#logging:
-#  config: classpath:log4j2-plain.xml
+logging:
+#  config: classpath:log4j2-spring.xml
+# Configure logging pattern via application.yml (alternative to log4j2-spring.xml)
+# pattern:
+#   console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+# Level configuration
+# level:
+#   root: INFO
+#   com.github.mafia.vyasma: DEBUG
 
 springdoc:
   swagger-ui:

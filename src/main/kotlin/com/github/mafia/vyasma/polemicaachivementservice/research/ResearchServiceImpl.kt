@@ -6,14 +6,17 @@ import com.github.mafia.vyasma.polemica.library.model.game.PolemicaPlayer
 import com.github.mafia.vyasma.polemica.library.model.game.PolemicaUser
 import com.github.mafia.vyasma.polemica.library.model.game.Position
 import com.github.mafia.vyasma.polemica.library.model.game.Role
+import com.github.mafia.vyasma.polemica.library.utils.KickReason
 import com.github.mafia.vyasma.polemica.library.utils.MetricsUtils
 import com.github.mafia.vyasma.polemica.library.utils.getFinalVotes
 import com.github.mafia.vyasma.polemica.library.utils.getFirstKilled
+import com.github.mafia.vyasma.polemica.library.utils.getKickedFromTable
 import com.github.mafia.vyasma.polemica.library.utils.getRole
 import com.github.mafia.vyasma.polemica.library.utils.isBlack
 import com.github.mafia.vyasma.polemica.library.utils.isBlackWin
 import com.github.mafia.vyasma.polemica.library.utils.isRed
 import com.github.mafia.vyasma.polemica.library.utils.isRedWin
+import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.Game
 import com.github.mafia.vyasma.polemicaachivementservice.rating.GamePointsService
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -28,12 +31,60 @@ class ResearchServiceImpl(
     val gameRepository: GameRepository,
     val userRepository: UserRepository,
     val polemicaClient: PolemicaClient,
-    val pointsService: GamePointsService
+    val pointsService: GamePointsService,
+    val achievementService: AchievementService
 ) : ResearchService {
     val logger = LoggerFactory.getLogger(ResearchServiceImpl::class.java)
 
     override fun blank() {
         return
+    }
+
+    override fun getFirstKilledStats(playerId: Long): FirstKilledStats {
+        var firstKilledAsRed = 0L
+        var firstKilledAsRedAndRedWin = 0L
+        var firstKilledAsSheriff = 0L
+        var firstKilledAsSheriffAndRedWin = 0L
+
+        gameRepository.findAll().forEach { game ->
+            val data = game.data
+            val firstKilledPosition = data.getFirstKilled()
+
+            // Find the player in this game
+            val playerInGame = data.players?.find { it.player?.id == playerId }
+            if (playerInGame == null) {
+                return@forEach
+            }
+
+            // Check if this player was first killed
+            if (playerInGame.position == firstKilledPosition) {
+                val playerRole = playerInGame.role
+                val isRedWin = data.isRedWin()
+
+                // Check if player is red (PEACE or SHERIFF)
+                if (playerRole.isRed()) {
+                    firstKilledAsRed++
+                    if (isRedWin) {
+                        firstKilledAsRedAndRedWin++
+                    }
+                }
+
+                // Check if player is sheriff
+                if (playerRole == Role.SHERIFF) {
+                    firstKilledAsSheriff++
+                    if (isRedWin) {
+                        firstKilledAsSheriffAndRedWin++
+                    }
+                }
+            }
+        }
+
+        return FirstKilledStats(
+            firstKilledAsRed = firstKilledAsRed,
+            firstKilledAsRedAndRedWin = firstKilledAsRedAndRedWin,
+            firstKilledAsSheriff = firstKilledAsSheriff,
+            firstKilledAsSheriffAndRedWin = firstKilledAsSheriffAndRedWin
+        )
     }
 
     override fun getGamesWhereFourRedVotesByPerson(): ResearchVotedByFourRedVotesAnswer {
@@ -359,12 +410,12 @@ class ResearchServiceImpl(
 
     data class TeamWinRate(val redWin: Long, val blackWin: Long)
 
-    fun getPlayerStatsCsv(profileUrls: List<String>): String {
+    fun getPlayerStatsCsv(): String {
         val csvBuilder = StringBuilder()
         // CSV Header
         csvBuilder.appendLine(
             listOf(
-                "Ссылка", "Username", "Рейтинг", "Количество игр",
+                "Id", "Username", "Рейтинг", "Количество игр",
                 "Игр Мирный", "Игр Мафия", "Игр Дон", "Игр Шериф",
                 "WinRate Мирный", "WinRate Мафия", "WinRate Дон", "WinRate Шериф",
                 "Средний доп Мирный", "Средний доп Мафия", "Средний доп Дон", "Средний доп Шериф",
@@ -373,29 +424,9 @@ class ResearchServiceImpl(
         )
 
         val allGames = gameRepository.findAll()
-            .filter { it.data.scoringType == 1 }
-            .filter { it.data.scoringVersion == "3.0" }
-            .filter {
-                listOf(3249, 3232, 3705, 3684, 4036, 3289).contains(it.gamePlace.competitionId?.toInt())
-                    || it.data.tags?.intersect(listOf("PremierLeague", "ChampionshipLeague"))?.isNotEmpty() ?: false
-            }
 
 
-        for (url in profileUrls) {
-            val playerId = try {
-                url.substringAfterLast('/').substringBefore('#').toLongOrNull()
-            } catch (e: Exception) {
-                logger.warn("Could not parse player ID from URL: $url", e)
-                null
-            }
-
-            if (playerId == null) {
-                logger.warn("Skipping invalid URL (no player ID): $url")
-                // Можно добавить строку с N/A если нужно для полноты
-                // csvBuilder.appendLine(List(13) { if (it == 0) url else "N/A" }.joinToString(","))
-                continue
-            }
-
+        for (playerId in userRepository.findAll().map { it.userId }) {
             val userEntity = userRepository.findByIdOrNull(playerId) ?: continue
             val username = userEntity.username
             val rating = userEntity.rating ?: 0.0
@@ -456,7 +487,7 @@ class ResearchServiceImpl(
 
             csvBuilder.appendLine(
                 listOf(
-                    url,
+                    playerId,
                     username,
                     rating.format(),
                     gamesWithActualScoring.toString(),
@@ -476,6 +507,149 @@ class ResearchServiceImpl(
                 ).joinToString(",")
             )
         }
+        return csvBuilder.toString()
+    }
+
+    fun getAchievement(): String {
+        return achievementService.getAchievements(emptyList(), userRepository.findAll().map { it.userId }, null)
+            .achievementsGains
+            .filter { it.achievementId == "sniper" }
+            .joinToString(separator = "\n") { "${it.user.id},${it.achievementCounter ?: 0}" }
+    }
+
+    fun getDayVotingStatistics(): String {
+        // Statistics tracking
+        var day1RedSheriffRedWin = 0L
+        var day1RedSheriffBlackWin = 0L
+        var day1BlackDonRedWin = 0L
+        var day1BlackDonBlackWin = 0L
+
+        // Day 2 statistics: key is (day2Role, day1Team)
+        val day2Stats = mutableMapOf<Pair<String, String>, Pair<Long, Long>>()
+
+        // Convert to list to ensure all results are loaded (avoid lazy loading issues)
+        val allGames = gameRepository.findAll().toList()
+        logger.info("Total games in repository: ${allGames.size}")
+
+        var processedCount = 0L
+        var day1VotedOutNot1 = 0L
+        var day2VotedOutNot1 = 0L
+        allGames.forEach { game ->
+            processedCount++
+            val data = game.data
+            val kickedPlayers = data.getKickedFromTable()
+
+            // Filter by VOTING reason and day 1 or day 2
+            val day1VotedOut = kickedPlayers.filter {
+                it.gamePhase.num == 2 && it.reason == KickReason.VOTING
+            }
+            val day2VotedOut = kickedPlayers.filter {
+                it.gamePhase.num == 3 && it.reason == KickReason.VOTING
+            }
+
+            day1VotedOutNot1 += if (day1VotedOut.size != 1) {
+                1
+            } else {
+                0
+            }
+            day2VotedOutNot1 += if (day2VotedOut.size != 1) {
+                1
+            } else {
+                0
+            }
+
+            // Process Day 1
+            // For day 1, use only votings where exactly one candidate was voted out
+            if (day1VotedOut.size == 1) {
+                val day1KickedPlayer = day1VotedOut.first()
+                val day1Role = data.getRole(day1KickedPlayer.position)
+
+                // Check if red/sheriff or black/don
+                val isRedSheriff = day1Role == Role.PEACE || day1Role == Role.SHERIFF
+                val isBlackDon = day1Role == Role.MAFIA || day1Role == Role.DON
+
+                if (isRedSheriff) {
+                    if (data.isRedWin()) {
+                        day1RedSheriffRedWin++
+                    } else {
+                        day1RedSheriffBlackWin++
+                    }
+                } else if (isBlackDon) {
+                    if (data.isRedWin()) {
+                        day1BlackDonRedWin++
+                    } else {
+                        day1BlackDonBlackWin++
+                    }
+                }
+            }
+
+            // Process Day 2
+            // For day 2, need exactly one player voted out on day 2, and day 1 must have exactly one
+            if (day2VotedOut.size == 1 && day1VotedOut.size == 1) {
+                // First, determine day 1 vote result
+                val day1KickedPlayer = day1VotedOut.first()
+                val day1Role = data.getRole(day1KickedPlayer.position)
+                val day1Team = if (day1Role == Role.PEACE || day1Role == Role.SHERIFF) {
+                    "Red"
+                } else if (day1Role == Role.MAFIA || day1Role == Role.DON) {
+                    "Black"
+                } else {
+                    null
+                }
+
+                // Find the expelled player on day 2
+                val day2KickedPlayer = day2VotedOut.first()
+                val day2Role = data.getRole(day2KickedPlayer.position)
+
+                // Check if red/sheriff or black/don
+                val isRedSheriff = day2Role == Role.PEACE || day2Role == Role.SHERIFF
+                val isBlackDon = day2Role == Role.MAFIA || day2Role == Role.DON
+
+                if ((isRedSheriff || isBlackDon) && day1Team != null) {
+                    val category = if (isRedSheriff) "RedSheriff" else "BlackDon"
+                    val key = Pair(category, day1Team)
+
+                    val currentStats = day2Stats.getOrDefault(key, Pair(0L, 0L))
+                    if (data.isRedWin()) {
+                        day2Stats[key] = Pair(currentStats.first + 1, currentStats.second)
+                    } else {
+                        day2Stats[key] = Pair(currentStats.first, currentStats.second + 1)
+                    }
+                }
+            }
+        }
+
+        logger.info("Processed $processedCount games. Day 1 Red/Sheriff: ${day1RedSheriffRedWin + day1RedSheriffBlackWin}, Day 1 Black/Don: ${day1BlackDonRedWin + day1BlackDonBlackWin}")
+        logger.info("day1VotedOutNot1: $day1VotedOutNot1, day2VotedOutNot1: $day2VotedOutNot1")
+        // Format as CSV
+        val csvBuilder = StringBuilder()
+        csvBuilder.appendLine("Category,Day1VoteResult,RedWin,BlackWin,Total")
+
+        // Day 1 Red/Sheriff
+        val day1RedSheriffTotal = day1RedSheriffRedWin + day1RedSheriffBlackWin
+        csvBuilder.appendLine("Day1_RedSheriff,,$day1RedSheriffRedWin,$day1RedSheriffBlackWin,$day1RedSheriffTotal")
+
+        // Day 1 Black/Don
+        val day1BlackDonTotal = day1BlackDonRedWin + day1BlackDonBlackWin
+        csvBuilder.appendLine("Day1_BlackDon,,$day1BlackDonRedWin,$day1BlackDonBlackWin,$day1BlackDonTotal")
+
+        // Day 2 statistics
+        val day2RedSheriffRed = day2Stats.getOrDefault(Pair("RedSheriff", "Red"), Pair(0L, 0L))
+        val day2RedSheriffRedTotal = day2RedSheriffRed.first + day2RedSheriffRed.second
+        csvBuilder.appendLine("Day2_RedSheriff,Red,${day2RedSheriffRed.first},${day2RedSheriffRed.second},$day2RedSheriffRedTotal")
+
+        val day2RedSheriffBlack = day2Stats.getOrDefault(Pair("RedSheriff", "Black"), Pair(0L, 0L))
+        val day2RedSheriffBlackTotal = day2RedSheriffBlack.first + day2RedSheriffBlack.second
+        csvBuilder.appendLine("Day2_RedSheriff,Black,${day2RedSheriffBlack.first},${day2RedSheriffBlack.second},$day2RedSheriffBlackTotal")
+
+        val day2BlackDonRed = day2Stats.getOrDefault(Pair("BlackDon", "Red"), Pair(0L, 0L))
+        val day2BlackDonRedTotal = day2BlackDonRed.first + day2BlackDonRed.second
+        csvBuilder.appendLine("Day2_BlackDon,Red,${day2BlackDonRed.first},${day2BlackDonRed.second},$day2BlackDonRedTotal")
+
+        val day2BlackDonBlack = day2Stats.getOrDefault(Pair("BlackDon", "Black"), Pair(0L, 0L))
+        val day2BlackDonBlackTotal = day2BlackDonBlack.first + day2BlackDonBlack.second
+        csvBuilder.appendLine("Day2_BlackDon,Black,${day2BlackDonBlack.first},${day2BlackDonBlack.second},$day2BlackDonBlackTotal")
+
         return csvBuilder.toString()
     }
 

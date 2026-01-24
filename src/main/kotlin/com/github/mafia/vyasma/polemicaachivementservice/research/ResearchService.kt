@@ -12,6 +12,7 @@ interface ResearchService {
     fun getTwoTwoTwoTwoDivInNinth(): Map<Int, Int>
     fun getPairStat(firstId: Long, secondId: Long): ResearchPairStat
     fun getCompetitionsForUserCsv(userId: Long): String
+    fun getFirstKilledStats(playerId: Long): FirstKilledStats
     fun blank()
 }
 
@@ -42,4 +43,11 @@ data class ResearchVotedByFourRedVotesGame(
     val gameId: Long,
     val gamePlace: PolemicaGamePlace,
     val gameStarted: LocalDateTime?
+)
+
+data class FirstKilledStats(
+    val firstKilledAsRed: Long,
+    val firstKilledAsRedAndRedWin: Long,
+    val firstKilledAsSheriff: Long,
+    val firstKilledAsSheriffAndRedWin: Long
 )

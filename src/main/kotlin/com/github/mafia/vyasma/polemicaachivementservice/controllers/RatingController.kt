@@ -8,6 +8,7 @@ import com.github.mafia.vyasma.polemica.library.model.game.Role
 import com.github.mafia.vyasma.polemica.library.utils.getPlayerNumStarted
 import com.github.mafia.vyasma.polemica.library.utils.getVotingParticipants
 import com.github.mafia.vyasma.polemicaachivementservice.achievements.services.AchievementService
+import com.github.mafia.vyasma.polemicaachivementservice.filters.GameFilterService
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.PlayerRatingHistory
 import com.github.mafia.vyasma.polemicaachivementservice.model.jpa.RecalibrationHistory
 import com.github.mafia.vyasma.polemicaachivementservice.repositories.GameRepository
@@ -38,7 +39,8 @@ class RatingController(
     private val recalibrationHistoryRepository: RecalibrationHistoryRepository,
     private val objectMapper: ObjectMapper,
     private val playerStatisticsService: PlayerStatisticsService,
-    private val achievementService: AchievementService
+    private val achievementService: AchievementService,
+    private val gameFilterService: GameFilterService
 ) {
 
     val logger = LoggerFactory.getLogger(this::class.java)
@@ -455,6 +457,35 @@ class RatingController(
         }
 
         return finalPayloads
+    }
+
+    @GetMapping("/player/{userId}/games")
+    fun getPlayerGamesPage(
+        @PathVariable userId: Long,
+        model: Model
+    ): String {
+        try {
+            val player = userRepository.findById(userId)
+                .orElseThrow { EntityNotFoundException("Игрок не найден") }
+
+            // Get all available filters
+            val filters = gameFilterService.getAllFilters()
+
+            // Get all player games for initial display
+            val allGames = gameRepository.findAllByUserJoinedFromPlayerRatingHistory(player)
+                .filter { game ->
+                    game.data.players?.any { it.player?.id == userId } ?: false
+                }
+
+            model.addAttribute("player", player)
+            model.addAttribute("filters", filters)
+            model.addAttribute("totalGames", allGames.size)
+
+            return "player-games-view"
+        } catch (e: Exception) {
+            logger.error("Error in player games page: ${e.message}", e)
+            throw e
+        }
     }
 
 
