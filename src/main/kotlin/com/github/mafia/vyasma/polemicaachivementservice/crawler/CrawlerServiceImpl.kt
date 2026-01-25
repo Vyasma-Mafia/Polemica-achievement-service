@@ -51,6 +51,7 @@ class CrawlerServiceImpl(
         logger.info("Crawling competitions started")
         val competitions = polemicaClient.getCompetitions()
         competitions.filter { it.city == SPB }.forEach { crawlCompetition(it, withStopOnDb) }
+        competitions.filter { it.id == 4664L }.forEach { crawlCompetition(it, withStopOnDb) }
         logger.info("Crawling competitions finished")
     }
 
