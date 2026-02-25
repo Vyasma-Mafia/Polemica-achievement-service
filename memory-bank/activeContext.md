@@ -18,6 +18,10 @@ This file tracks the project's current status, including recent changes, current
 
 ## Recent Changes
 
+* [2026-02-25] - Added client-side player profile personalization for rating pages:
+    * Added "home profile" controls on `player-history-view.html` and `player-games-view.html`
+    * Added localStorage-based quick navigation panel on `ratings-view.html` ("Мой профиль")
+    * Added localStorage-based "recently viewed profiles" history and rendering on `ratings-view.html`
 * [2025-01-27] - Completed comprehensive Memory Bank documentation for all service subsystems:
     * Added detailed sections to `productContext.md` for Achievement, Rating, Statistics, Research, Crawler, and
       Tournament subsystems
@@ -29,3 +33,11 @@ This file tracks the project's current status, including recent changes, current
 ## Open Questions/Issues
 
 * None at the moment.
+
+## Local Run Notes
+
+* Agent can run and verify the local service independently when needed.
+* Environment variables for local run:
+    * `DATABASE_PASSWORD=mafia`
+    * `DATABASE_URL=jdbc:postgresql://localhost:5434/achievement`
+* Env file path: `/Users/chulkov-alex/personal/mafia/polemica-achivement-service/.env`

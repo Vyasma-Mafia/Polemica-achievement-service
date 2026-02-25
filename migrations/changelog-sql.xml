@@ -48,4 +48,8 @@
     <changeSet id="add_processed_tournament_ids_table" author="chulkov-alex">
         <sqlFile path="sql/add_processed_tournament_ids_table.sql" relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="add_competition_win_scores" author="chulkov-alex">
+        <sqlFile path="sql/add_competition_win_scores.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 </databaseChangeLog>

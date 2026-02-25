@@ -77,7 +77,10 @@ class CrawlerServiceImpl(
                     val game = Game(
                         gameId = id,
                         data = it,
-                        gamePlace = PolemicaGamePlace(competitionId = competition.id),
+                        gamePlace = PolemicaGamePlace(
+                            competitionId = competition.id,
+                            competitionWinScores = competition.winScores
+                        ),
                         started = it.started
                     )
                     gameRepository.save(game)

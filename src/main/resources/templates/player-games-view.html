@@ -67,13 +67,19 @@
 <div class="player-header">
     <div class="container">
         <div class="row mb-3">
-            <div class="col-12">
+            <div class="col-12 d-flex flex-wrap gap-2">
                 <a class="btn btn-light btn-sm" href="/rating">
                     <i class="bi bi-arrow-left"></i> К рейтингу
                 </a>
                 <a class="btn btn-light btn-sm ms-2" th:href="@{'/rating/player/' + ${player.userId}}">
                     <i class="bi bi-person"></i> Профиль игрока
                 </a>
+                <button class="btn btn-outline-light btn-sm" id="markHomeProfileBtn" type="button">
+                    <i class="bi bi-house-heart"></i> Отметить своим профилем
+                </button>
+                <button class="btn btn-light btn-sm d-none" id="clearHomeProfileBtn" type="button">
+                    <i class="bi bi-x-circle"></i> Убрать
+                </button>
             </div>
         </div>
         <div class="row">
@@ -267,9 +273,80 @@
         player
         .userId
     }]];
+    const playerName = [[${
+        player
+        .username
+    }]];
     const filters = [[${filters}]];
+    const HOME_PLAYER_ID_KEY = 'polemicaHomePlayerId';
+    const HOME_PLAYER_NAME_KEY = 'polemicaHomePlayerName';
+    const VIEW_HISTORY_KEY = 'polemicaPlayerViewHistory';
+    const VIEW_HISTORY_LIMIT = 12;
 
     let activeFilters = {};
+
+    function getStoredHomePlayerId() {
+        return localStorage.getItem(HOME_PLAYER_ID_KEY);
+    }
+
+    function isCurrentPlayerHome() {
+        const storedId = getStoredHomePlayerId();
+        return storedId !== null && storedId === String(playerId);
+    }
+
+    function renderHomeProfileControls() {
+        const markButton = document.getElementById('markHomeProfileBtn');
+        const clearButton = document.getElementById('clearHomeProfileBtn');
+
+        if (!markButton || !clearButton) {
+            return;
+        }
+
+        if (isCurrentPlayerHome()) {
+            markButton.classList.remove('btn-outline-light');
+            markButton.classList.add('btn-success');
+            markButton.innerHTML = '<i class="bi bi-house-check"></i> Это ваш домашний профиль';
+            clearButton.classList.remove('d-none');
+        } else {
+            markButton.classList.remove('btn-success');
+            markButton.classList.add('btn-outline-light');
+            markButton.innerHTML = '<i class="bi bi-house-heart"></i> Отметить своим профилем';
+            clearButton.classList.add('d-none');
+        }
+    }
+
+    function saveCurrentPlayerAsHome() {
+        localStorage.setItem(HOME_PLAYER_ID_KEY, String(playerId));
+        localStorage.setItem(HOME_PLAYER_NAME_KEY, String(playerName || ''));
+        renderHomeProfileControls();
+    }
+
+    function clearHomePlayer() {
+        localStorage.removeItem(HOME_PLAYER_ID_KEY);
+        localStorage.removeItem(HOME_PLAYER_NAME_KEY);
+        renderHomeProfileControls();
+    }
+
+    function updateViewedProfilesHistory() {
+        let history = [];
+        try {
+            const rawHistory = localStorage.getItem(VIEW_HISTORY_KEY);
+            history = rawHistory ? JSON.parse(rawHistory) : [];
+            if (!Array.isArray(history)) {
+                history = [];
+            }
+        } catch (error) {
+            history = [];
+        }
+
+        const normalizedHistory = history.filter(item => item && item.id !== undefined && item.name !== undefined);
+        const filteredHistory = normalizedHistory.filter(item => String(item.id) !== String(playerId));
+        const nextHistory = [{
+            id: playerId,
+            name: String(playerName || '')
+        }, ...filteredHistory].slice(0, VIEW_HISTORY_LIMIT);
+        localStorage.setItem(VIEW_HISTORY_KEY, JSON.stringify(nextHistory));
+    }
 
     // Initialize filter checkboxes
     document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
@@ -476,6 +553,18 @@
 
     // Load games on page load
     document.addEventListener('DOMContentLoaded', function () {
+        const markButton = document.getElementById('markHomeProfileBtn');
+        const clearButton = document.getElementById('clearHomeProfileBtn');
+
+        if (markButton) {
+            markButton.addEventListener('click', saveCurrentPlayerAsHome);
+        }
+        if (clearButton) {
+            clearButton.addEventListener('click', clearHomePlayer);
+        }
+
+        renderHomeProfileControls();
+        updateViewedProfilesHistory();
         applyFilters();
     });
 </script>

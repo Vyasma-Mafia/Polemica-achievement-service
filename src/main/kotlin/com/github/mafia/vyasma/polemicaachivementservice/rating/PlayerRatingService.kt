@@ -29,6 +29,8 @@ import kotlin.math.abs
 
 const val DEFAULT_MU = 250.0
 const val DEFAULT_SIGMA = DEFAULT_MU / 3.0
+const val MIN_RATING_DELTA = 10.0
+const val MAX_RATING_DELTA = 50.0
 
 @Service
 class PlayerRatingService(
@@ -67,7 +69,8 @@ class PlayerRatingService(
         civilianTeam: List<Pair<Long, Double>>,
         isMafiaWin: Boolean,
         gameDate: LocalDateTime,
-        isCompetitive: Boolean = false // Параметр для указания типа игры
+        isCompetitive: Boolean = false, // Параметр для указания типа игры
+        winScoreValue: Double
     ) {
         if (mafiaTeam.isEmpty() || civilianTeam.isEmpty()) {
             return
@@ -165,14 +168,16 @@ class PlayerRatingService(
                 else -> null
             } ?: return@forEach
 
-            val calculatedWeight = calculatePlayerWeight(playerPoints, isWinner, player, isCompetitive)
+            val calculatedWeight = calculatePlayerWeight(playerPoints, isWinner, player, isCompetitive, winScoreValue)
 
             // Сохраняем старые значения для истории
             val oldMu = player.mu ?: DEFAULT_MU
             val oldSigma = player.sigma ?: DEFAULT_SIGMA
 
-            // Обновляем параметры рейтинга
-            val newMu = oldMu + (adjustment.mu - oldMu) * calculatedWeight
+            // Ограничиваем итоговое изменение рейтинга на игрока за матч
+            val weightedDelta = (adjustment.mu - oldMu) * calculatedWeight
+            val boundedDelta = boundRatingDelta(weightedDelta)
+            val newMu = oldMu + boundedDelta
             val newSigma = adjustment.sigma
 
             player.mu = newMu
@@ -324,7 +329,8 @@ class PlayerRatingService(
         points: Double,
         isWinner: Boolean,
         player: User,
-        isCompetitive: Boolean
+        isCompetitive: Boolean,
+        winScoreValue: Double
     ): Double {
         // Базовый коэффициент от 0.5 до 1.5 на основе баллов
         val baseWeightFactor = points + 1
@@ -333,7 +339,7 @@ class PlayerRatingService(
         val directedWeight = if (isWinner) {
             baseWeightFactor
         } else {
-            1.8 - baseWeightFactor
+            winScoreValue + 0.7 - baseWeightFactor
         }
 
         // Специальные корректировки для новичков и ветеранов
@@ -351,6 +357,15 @@ class PlayerRatingService(
 
         // Применяем множитель для турнирных игр
         return adjustedWeight * competitiveMultiplier
+    }
+
+    private fun boundRatingDelta(delta: Double): Double {
+        if (delta == 0.0) {
+            return 0.0
+        }
+
+        val absDelta = abs(delta).coerceIn(MIN_RATING_DELTA, MAX_RATING_DELTA)
+        return if (delta > 0) absDelta else -absDelta
     }
 
     /**
@@ -403,6 +418,7 @@ class PlayerRatingService(
     @Transactional
     fun updatePlayerRatings(game: Game) {
         val points = game.points ?: return
+        val winScoreValue = game.gamePlace.competitionWinScores ?: 1.0
 
         val redTeam = extractTeamWithPoints(game.data.players, points.players) { it.isRed() }
         val blackTeam = extractTeamWithPoints(game.data.players, points.players) { it.isBlack() }
@@ -418,7 +434,8 @@ class PlayerRatingService(
             redTeam,
             !isRedWin,
             game.started ?: LocalDateTime.now(),
-            competitive
+            competitive,
+            winScoreValue
         )
     }
 
@@ -431,7 +448,7 @@ class PlayerRatingService(
             ?.map { player ->
                 val playerPoints = points.find { it.position == player.position.value }?.points
                     ?: 0.0
-                Pair(player.player!!.id, playerPoints)
+                Pair(player.player!!.id, playerPoints - (player.award ?: 0.0))
             } ?: emptyList()
     }
 }
