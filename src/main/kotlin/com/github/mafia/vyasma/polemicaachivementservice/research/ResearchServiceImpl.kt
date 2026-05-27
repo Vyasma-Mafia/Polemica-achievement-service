@@ -665,4 +665,32 @@ class ResearchServiceImpl(
         val averageAdditionalPoints: Double
             get() = if (gamesWithPointsCount > 0) totalAdditionalPoints / gamesWithPointsCount else 0.0
     }
+
+    fun getPointsByFirstKilled(userId: Long): Pair<Double, Double> {
+        val games = gameRepository.findAllByUserJoinedFromPlayerRatingHistory(userRepository.findById(userId).get())
+        var totalGames = 0
+        var totalWins = 0
+        var totalPoints = 0.0
+        var fkGames = 0
+        var fkPoints = 0.0
+        var fkWins = 0
+        for (game in games) {
+            if (game.gameId < 100000) continue
+            val pos = game.data.players?.find { it.player?.id == userId }?.position ?: continue
+            if (game.data.getRole(pos) != Role.PEACE) continue
+            var points = game.points?.players?.find { it.position == pos.value }?.points ?: continue
+            if (game.data.isRedWin()) totalWins++
+            if (game.data.getFirstKilled() == pos) {
+                fkGames++
+                if (game.data.isRedWin()) {
+                    fkWins++
+                }
+                fkPoints += points
+            }
+            totalGames++
+            totalPoints += points
+        }
+        logger.info("Total games: $totalGames, Total wins: $totalWins, Games points: $totalPoints, FK games: $fkGames, Fk wins: $fkWins, Fk points: $fkPoints")
+        return Pair(fkPoints / fkGames, totalPoints / totalGames)
+    }
 }

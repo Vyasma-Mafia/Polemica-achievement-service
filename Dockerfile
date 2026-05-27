@@ -12,7 +12,7 @@ COPY gradle /app/gradle
 RUN chmod +x gradlew
 
 # Download dependencies (this step is cached unless the dependencies change)
-RUN ./gradlew --no-daemon build || return 0
+RUN ./gradlew --no-daemon dependencies
 
 # Copy the rest of the source code
 COPY src /app/src
@@ -21,7 +21,7 @@ COPY src /app/src
 RUN ./gradlew --no-daemon build
 
 # STAGE 2: Create a minimal image to run the Kotlin app
-FROM eclipse-temurin:21-jdk-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 # Set the working directory for the new container
 WORKDIR /app
